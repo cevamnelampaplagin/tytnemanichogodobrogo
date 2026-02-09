@@ -87,7 +87,7 @@
       };
     }
 
-    var network = new Lampa.Reguest();
+    var network = new Lampa.Request();
     var api_url = 'https://cors.fx666.workers.dev/https://ws.pris.cam/api/collections/';
     var collections = [{
       hpu: 'new',
