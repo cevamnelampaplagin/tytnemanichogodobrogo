@@ -7,6 +7,7 @@
     var EXCLUDED_CLASSES = ['button--play', 'button--edit-order', 'button--folder'];
 
     // --- ПЕРЕКЛАД ---
+// https://t.me/bazarnetua створено людьми для людей. Для безкоштовного використання.
     function t(key) {
         var translated = Lampa.Lang.translate(key);
         return translated && translated !== key ? translated : key.replace('custom_interface_plugin_', '');
@@ -905,5 +906,6 @@
 
     try { init(); } catch (e) { console.error('Plugin init error:', e); }
     if (typeof module !== 'undefined' && module.exports) module.exports = {};
+
 
 })();
