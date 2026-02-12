@@ -174,9 +174,9 @@
       settings: { url: 'https://jacred.torrservera.net', key: '', parser_torrent_type: 'jackett' }
     },
     {
-      base: 'youqa_site',
-      name: 'Youqa Jackett',
-      settings: { url: 'http://jac.youqa.site', key: '1', parser_torrent_type: 'jackett' }
+      base: 'spawn_pp_ua',
+      name: 'Spawnpp-UA (Ukrainian trackers)',
+      settings: { url: 'spawn.pp.ua:59117', key: '2', parser_torrent_type: 'jackett' }
     },
     {
       base: 'localhost',
