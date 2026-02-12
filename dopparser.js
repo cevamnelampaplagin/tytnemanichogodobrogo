@@ -171,7 +171,7 @@
     {
       base: 'jacred_torrservera',
       name: 'Jacred (TorrServera)',
-      settings: { url: 'http://jacred.torrservera.net', key: '', parser_torrent_type: 'jackett' }
+      settings: { url: 'https://jacred.torrservera.net', key: '', parser_torrent_type: 'jackett' }
     },
     {
       base: 'youqa_site',
