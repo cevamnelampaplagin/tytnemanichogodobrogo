@@ -149,9 +149,9 @@
       settings: { url: 'http://spawnum.duckdns.org:59117', key: '2', parser_torrent_type: 'jackett' }
     },
     {
-      base: 'jacred_pro',
-      name: 'Jacred.pro (CIS/Global)',
-      settings: { url: 'jacred.pro', key: '', parser_torrent_type: 'jackett' }
+      base: 'jiket',
+      name: 'Jacblack (SNG/Global)',
+      settings: { url: 'http://jacblack.ru:9117/', key: '', parser_torrent_type: 'jackett' }
     },
     {
       base: 'jacred_xyz',
