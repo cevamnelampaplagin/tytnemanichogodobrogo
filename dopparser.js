@@ -136,7 +136,7 @@
     {
       base: 'lampa_ua',
       name: 'LampaUA (bazarnetua)',
-      settings: { url: 'jackettua.mooo.com', key: 'ua', parser_torrent_type: 'jackett' }
+      settings: { url: 'http://jackettua.mooo.com', key: 'ua', parser_torrent_type: 'jackett' }
     },
     {
       base: 'spawnum_duckdns_org_49117',
