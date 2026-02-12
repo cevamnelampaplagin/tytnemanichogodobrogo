@@ -135,7 +135,7 @@
   var parsersInfo = [
     {
       base: 'lampa_ua',
-      name: 'LampaUA (UA/CIS)',
+      name: 'LampaUA (bazarnetua)',
       settings: { url: 'jackettua.mooo.com', key: 'ua', parser_torrent_type: 'jackett' }
     },
     {
@@ -164,9 +164,9 @@
       settings: { url: 'jac.maxvol.pro', key: '1', parser_torrent_type: 'jackett' }
     },
     {
-      base: 'jacred_viewbox',
-      name: 'Jacred (ViewBox Mirror)',
-      settings: { url: 'http://jacred.viewbox.dev', key: '', parser_torrent_type: 'jackett' }
+      base: 'otlampa',
+      name: 'Всяке різне',
+      settings: { url: 'http://87.120.84.218:9117', key: '333', parser_torrent_type: 'jackett' }
     },
     {
       base: 'jacred_torrservera',
