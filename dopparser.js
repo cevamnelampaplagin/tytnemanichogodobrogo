@@ -150,12 +150,12 @@
     },
     {
       base: 'jiket',
-      name: 'Jacblack (SNG/Global)',
+      name: 'Jacblack (SNG/11Track)',
       settings: { url: 'http://jacblack.ru:9117', key: '', parser_torrent_type: 'jackett' }
     },
     {
       base: 'jacred_xyz',
-      name: 'Jacred.xyz (Mirror)',
+      name: 'Jacred.xyz (Mirror11T)',
       settings: { url: 'jacred.xyz', key: '', parser_torrent_type: 'jackett' }
     },
     {
@@ -165,13 +165,13 @@
     },
     {
       base: 'otlampa',
-      name: 'Всяке різне',
+      name: 'Всяке різне 6',
       settings: { url: 'http://87.120.84.218:9117', key: '333', parser_torrent_type: 'jackett' }
     },
     {
       base: 'jacred_torrservera',
-      name: 'Jacred (TorrServera)',
-      settings: { url: 'https://jacred.torrservera.net', key: '', parser_torrent_type: 'jackett' }
+      name: 'Jacred (TorrServera14)',
+      settings: { url: 'http://jacred.torrservera.net', key: '', parser_torrent_type: 'jackett' }
     },
     {
       base: 'spawn_pp_ua',
