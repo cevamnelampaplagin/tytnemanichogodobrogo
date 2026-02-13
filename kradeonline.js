@@ -697,7 +697,7 @@ return url + (url.indexOf('?') >= 0 ? '&' : '?') + query.join('&');
       this.toPlayElement = function(file) {
 
         // Додаємо сповіщення
-        Lampa.Noty.show('Безкоштовно від kozak.mooo.com (t.me/flownetua) Не платіть шахраям!', {time: 5000});
+        Lampa.Noty.show('Безкоштовно! Не платіть шахраям!', {time: 10});
         var play = {
           title: file.title,
           url: file.url,
@@ -1976,3 +1976,4 @@ if (find_voice_url && !find_voice_url.active) {
   if (!window.Flownetua_plugin) startPlugin();
 
 })();
+
