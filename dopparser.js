@@ -151,7 +151,7 @@
     {
       base: 'jiket',
       name: 'Jacblack (SNG/Global)',
-      settings: { url: 'http://jacblack.ru:9117/', key: '', parser_torrent_type: 'jackett' }
+      settings: { url: 'http://jacblack.ru:9117', key: '', parser_torrent_type: 'jackett' }
     },
     {
       base: 'jacred_xyz',
