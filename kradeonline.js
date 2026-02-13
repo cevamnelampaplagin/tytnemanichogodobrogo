@@ -1755,14 +1755,14 @@ if (find_voice_url && !find_voice_url.active) {
   function showFreeWarning() {
     if ($('.lampac-free-warning').length) return;
     var textTitle = "УВАГА! ЦЕЙ СЕРВІС БЕЗКОШТОВНИЙ!";
-    var textBody = "Джерело: kozak.mooo.com (t.me/flownetua)<br>Якщо ви заплатили за цей плагін гроші — ВАС ОШУКАЛИ!";
+    var textBody = "Джерело:🤔🤷<br>Якщо ви заплатили за цей плагін гроші — ВАС ОШУКАЛИ!";
     var modal = $('<div class="lampac-free-warning" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;font-family:sans-serif;">' +
     '<div style="font-size:3.5vh;color:#ff3b30;font-weight:bold;margin-bottom:2vh;text-transform:uppercase;padding:0 20px;">' + textTitle + '</div>' +
     '<div style="font-size:2.5vh;line-height:1.5;color:#fff;padding:0 20px;">' + textBody + '</div>' +
     '<div style="margin-top:4vh;font-size:3vh;border:2px solid #fff;border-radius:50%;width:2em;height:2em;line-height:2em;text-align:center;color:#4cd964;" class="counter">5</div>' +
     '</div>');
     $('body').append(modal);
-    var count = 5;
+    var count = 1;
     var timer = setInterval(function(){
       count--;
       modal.find('.counter').text(count);
@@ -1976,4 +1976,5 @@ if (find_voice_url && !find_voice_url.active) {
   if (!window.Flownetua_plugin) startPlugin();
 
 })();
+
 
