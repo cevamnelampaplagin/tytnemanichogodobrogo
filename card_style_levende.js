@@ -1,3 +1,4 @@
+// https://levende.github.io/lampa-plugins/
 (function () {
     'use strict';
 
@@ -77,4 +78,5 @@
     }
 
     start();
+
 })();
