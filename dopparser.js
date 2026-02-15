@@ -170,8 +170,13 @@
     },
     {
       base: 'jacred_torrservera',
-      name: 'Jacred (TorrServera14)',
+      name: 'Jacred14 (TorrServera14)',
       settings: { url: 'http://jacred.torrservera.net', key: '', parser_torrent_type: 'jackett' }
+    },
+    {
+      base: 'jacred_stull',
+      name: 'Jacred12 (stull)',
+      settings: { url: 'http://jac.stull.xyz', key: '1', parser_torrent_type: 'jackett' }
     },
     {
       base: 'spawn_pp_ua',
