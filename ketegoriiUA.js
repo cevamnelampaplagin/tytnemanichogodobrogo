@@ -1,3 +1,4 @@
+// https://nor3ela.github.io/cat_ua.js
 (function () {
     'use strict';
 
