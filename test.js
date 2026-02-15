@@ -13,7 +13,7 @@ Lampa.Template.add('menu_yt', `
         <path d="M 3 20.5  ...  Z"></path>
       </svg>
     </div>
-    <div class="menu__text">YouTube</div>
+    <div class="menu__text">HTML5TEST</div>
   </li>
 `);
 
@@ -39,7 +39,7 @@ Lampa.Listener.follow('app', function (event) {
 Lampa.Listener.follow('menu', function (event) {
   if (event.type === 'hover:enter' && event.name === 'menu_yt') {
     // знаходимо наш елемент та симулюємо клік
-    const link = $('<a target="_blank" href="https://youtube.com/tv"></a>')[0];
+    const link = $('<a target="_blank" href="https://antutu.com/html5"></a>')[0];
     link.click();
   }
 });
