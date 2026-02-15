@@ -1,4 +1,4 @@
-// https://nor3ela.github.io/cat_ua.js
+// https://nor3ela.github.io/cat_ua.js  автора: @myroslav_kuzyshyn
 (function () {
     'use strict';
 
