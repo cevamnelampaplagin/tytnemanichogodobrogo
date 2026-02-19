@@ -14,7 +14,7 @@
     { host: 'lom.my.to:8080',     login: '', password: '' },
     { host: '185.235.218.109:8090', login: '', password: '' },
     { host: '212.92.252.254:8090',  login: '', password: '' },
-    { host: '77.110.122.115:8090',  login: '', password: '' }
+    { host: '77.110.122.115:8090',  login: '', password: '' },
     { host: '146.59.45.143:8090',  login: 'bazarnetua', password: 'lampaua' }
   ];
 
