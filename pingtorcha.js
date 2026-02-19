@@ -10,7 +10,7 @@
   // -------- список серверів --------
   const servers = [
     { host: '95.174.93.5:8090',   login: '', password: '' },
-    // { host: '90.189.153.32:8191', login: '', password: '' },
+    { host: '83.143.113.137:8090', login: '', password: '' },
     { host: '95.174.115.119:8090',  login: '', password: '' },
     { host: '77.83.247.48:8090',     login: '', password: '' },
     { host: '45.144.53.25:37940', login: '', password: '' },
@@ -20,7 +20,9 @@
     { host: '194.113.32.79:8090',  login: '', password: '' },
     { host: '45.144.53.25:37940',  login: '', password: '' },
     { host: '77.110.122.115:8090',  login: '', password: '' },
-    { host: '146.59.45.143:8090',  login: 'bazarnetua', password: 'lampaua' }
+    { host: '146.59.45.143:8090',  login: 'bazarnetua', password: 'lampaua' },
+    { host: 'ts.maxvol.pro',  login: '', password: '' },
+    { host: 'lam.maxvol.pro/ts',  login: '1zmugz8t', password: 'ts' }
   ];
 
   // -------- допоміжна затримка --------
