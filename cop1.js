@@ -1,14 +1,11 @@
 (function () {
     'use strict';
 
-    // Чекаємо повного завантаження Lampa та плеєра
     function initPlugin() {
         if (window.Lampa && window.Lampa.Player) {
-            // Якщо плеєр вже готовий – додаємо кнопку
             if (Lampa.Player.active) {
                 addCopyButton();
             } else {
-                // Інакше чекаємо події ready від плеєра
                 Lampa.Player.listener.follow('ready', addCopyButton);
             }
         } else {
@@ -17,21 +14,17 @@
     }
 
     function addCopyButton() {
-        // Запобігаємо дублюванню
         if (document.getElementById('lampa-copy-button')) return;
 
-        // Шукаємо контейнер для кнопок керування плеєра
         const controls = document.querySelector('.player-controls, .player__controls, .video-controls, .player');
         if (!controls) return;
 
-        // Створюємо кнопку
         const btn = document.createElement('button');
         btn.id = 'lampa-copy-button';
-        btn.className = 'player-controls__btn'; // намагаємось наслідувати класи Lampa
+        btn.className = 'player-controls__btn';
         btn.setAttribute('aria-label', 'Копіювати посилання');
-        btn.innerHTML = '📋'; // Іконка, можна замінити на текст
+        btn.innerHTML = '📋';
 
-        // Стилі – адаптовані під тему Lampa (темний напівпрозорий фон, білий текст)
         Object.assign(btn.style, {
             background: 'rgba(20, 20, 20, 0.8)',
             border: 'none',
@@ -49,39 +42,99 @@
 
         btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(255, 255, 255, 0.2)');
         btn.addEventListener('mouseleave', () => btn.style.background = 'rgba(20, 20, 20, 0.8)');
-
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             copyVideoLink(btn);
         });
 
-        // Додаємо кнопку в правий кінець панелі керування (або в кінець контейнера)
         controls.appendChild(btn);
     }
 
-    function copyVideoLink(btn) {
-        let videoUrl = '';
+    // Розширена функція пошуку URL
+    function findVideoUrl() {
+        // 1. Прямі поля в Lampa.Player
+        const possiblePaths = [
+            'network.url',
+            'currentVideo.url',
+            'activeSource.url',
+            'source.url',
+            'media.url',
+            'hls.url',
+            'dash.url',
+            'playlist[0].file',
+            'playlist[0].url',
+            'currentMedia.url',
+            'currentMedia.file',
+            'mediaInfo.url'
+        ];
 
-        // 1. Спроба отримати URL через API Lampa (різні варіанти)
-        if (Lampa.Player.network && Lampa.Player.network.url) {
-            videoUrl = Lampa.Player.network.url;
-        } else if (Lampa.Player.currentVideo && Lampa.Player.currentVideo.url) {
-            videoUrl = Lampa.Player.currentVideo.url;
-        } else if (Lampa.Player.activeSource && Lampa.Player.activeSource.url) {
-            videoUrl = Lampa.Player.activeSource.url;
-        } else if (Lampa.Player.source && Lampa.Player.source.url) {
-            videoUrl = Lampa.Player.source.url;
-        } else if (Lampa.Player.media && Lampa.Player.media.url) {
-            videoUrl = Lampa.Player.media.url;
-        } else {
-            // 2. Якщо не знайшли – пробуємо взяти з video-елемента
-            const video = document.querySelector('video');
-            if (video && video.src && !video.src.startsWith('blob:')) {
-                videoUrl = video.src;
+        for (let path of possiblePaths) {
+            let parts = path.split('.');
+            let obj = Lampa.Player;
+            let found = true;
+            for (let part of parts) {
+                if (obj && typeof obj === 'object' && part in obj) {
+                    obj = obj[part];
+                } else {
+                    found = false;
+                    break;
+                }
+            }
+            if (found && obj && typeof obj === 'string' && !obj.startsWith('blob:')) {
+                return obj;
             }
         }
 
-        if (videoUrl && !videoUrl.startsWith('blob:')) {
+        // 2. Пошук в Lampa.Player.mediaList (якщо є плейлист)
+        if (Lampa.Player.mediaList && Array.isArray(Lampa.Player.mediaList)) {
+            for (let item of Lampa.Player.mediaList) {
+                if (item.url && typeof item.url === 'string' && !item.url.startsWith('blob:')) return item.url;
+                if (item.file && typeof item.file === 'string' && !item.file.startsWith('blob:')) return item.file;
+            }
+        }
+
+        // 3. Пошук в об'єкті currentVideo (детальніше)
+        if (Lampa.Player.currentVideo) {
+            let cv = Lampa.Player.currentVideo;
+            if (cv.url && !cv.url.startsWith('blob:')) return cv.url;
+            if (cv.file && !cv.file.startsWith('blob:')) return cv.file;
+            if (cv.src && !cv.src.startsWith('blob:')) return cv.src;
+        }
+
+        // 4. Аналіз відео-елемента та його джерел
+        const video = document.querySelector('video');
+        if (video) {
+            // Прямий src
+            if (video.src && !video.src.startsWith('blob:')) return video.src;
+
+            // Всі дочірні source
+            const sources = video.querySelectorAll('source');
+            for (let source of sources) {
+                if (source.src && !source.src.startsWith('blob:')) return source.src;
+            }
+
+            // Якщо відео відтворюється через HLS.js, можна спробувати отримати url з hls
+            if (video.hls && video.hls.url) return video.hls.url;
+        }
+
+        // 5. Якщо використовується HLS.js, заглянути в Lampa.Player.hls
+        if (Lampa.Player.hls && Lampa.Player.hls.url) {
+            return Lampa.Player.hls.url;
+        }
+
+        // 6. Остання спроба: взяти поточний src з network
+        if (Lampa.Player.network && Lampa.Player.network.currentRequest) {
+            let req = Lampa.Player.network.currentRequest;
+            if (req.url && !req.url.startsWith('blob:')) return req.url;
+        }
+
+        return null;
+    }
+
+    function copyVideoLink(btn) {
+        const videoUrl = findVideoUrl();
+
+        if (videoUrl) {
             navigator.clipboard.writeText(videoUrl)
                 .then(() => {
                     showNotification('Посилання скопійовано!', 'success');
@@ -100,7 +153,7 @@
         if (window.Lampa && Lampa.Noty) {
             Lampa.Noty.show(text);
         } else {
-            alert(text); // fallback
+            alert(text);
         }
     }
 
@@ -115,7 +168,6 @@
         }, 1500);
     }
 
-    // Запускаємо скрипт після готовності додатка
     if (window.appready) {
         initPlugin();
     } else {
