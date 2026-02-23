@@ -1,0 +1,1 @@
+Lampa.Utils.putScriptAsync(["https://aviamovie.github.io/surs.js"], function() {});
