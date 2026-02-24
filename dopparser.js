@@ -159,6 +159,11 @@
       settings: { url: 'https://jacred.stream', key: 'pp', parser_torrent_type: 'jackett' }
     },
     {
+      base: 'jacred_xyz3',
+      name: 'Jacred.xyz3 (Mirror3)',
+      settings: { url: 'https://jac.red', key: '', parser_torrent_type: 'jackett' }
+    },
+    {
       base: 'jacred_xyz',
       name: 'Jacred.xyz (Mirror11T)',
       settings: { url: 'jacred.xyz', key: '', parser_torrent_type: 'jackett' }
