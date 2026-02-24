@@ -174,6 +174,11 @@
       settings: { url: 'jac.maxvol.pro', key: '1', parser_torrent_type: 'jackett' }
     },
     {
+      base: 'Maxvol_pro2',
+      name: 'JMaxvol.pro2 (Mirror)',
+      settings: { url: 'https://jr.maxvol.pro', key: '', parser_torrent_type: 'jackett' }
+    },
+    {
       base: 'otlampa',
       name: 'Всяке різне 6',
       settings: { url: 'http://87.120.84.218:9117', key: '333', parser_torrent_type: 'jackett' }
