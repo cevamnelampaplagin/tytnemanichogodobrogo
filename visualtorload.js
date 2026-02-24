@@ -195,6 +195,9 @@
 	    zh: '连接数'
 	}
     });
+	const EXT_META_NAME = 'dopparsers';
+    const EXT_META_AUTHOR = '@cevamnelampaplagin';
+    const EXT_META_URL_HINTS = ['dopparsers'];
     function tsIP(){
 	// Для поддержки верссии 1.6.5
 	return (!!Lampa.Torserver && !!Lampa.Torserver.ip)
