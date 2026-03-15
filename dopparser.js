@@ -139,9 +139,9 @@
       settings: { url: 'http://jackettua.mooo.com', key: 'ua', parser_torrent_type: 'jackett' }
     },
     {
-      base: 'alvin',
-      name: 'sngHZ',
-      settings: { url: 'http://alvine.mooo.com:889', key: '', parser_torrent_type: 'jackett' }
+      base: 'melo',
+      name: 'sngHZ13',
+      settings: { url: 'http://91.238.104.82:9117', key: '', parser_torrent_type: 'jackett' }
     },
     {
       base: 'spawnum_duckdns_org_49117',
