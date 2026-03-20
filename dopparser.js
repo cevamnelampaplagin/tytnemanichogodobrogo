@@ -140,8 +140,8 @@
     },
     {
       base: 'melo',
-      name: 'sngHZ13',
-      settings: { url: 'http://91.238.104.82:9117', key: '', parser_torrent_type: 'jackett' }
+      name: 'sngHZ13?',
+      settings: { url: 'http://91.238.104.82:888', key: 'jacred93ua', parser_torrent_type: 'jackett' }
     },
     {
       base: 'spawnum_duckdns_org_49117',
