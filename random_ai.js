@@ -311,7 +311,7 @@
 
         Lampa.SettingsApi.addComponent({ component: 'ai_search_cfg', name: 'AI Поиск', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' });
         Lampa.SettingsApi.addParam({ component: 'ai_search_cfg', param: { name: 'ai_key_trigger', type: 'trigger' }, field: { name: 'API Ключи (Google)' }, onRender: function(item) {
-            var val = Lampa.Storage.get(STORAGE_KEY, '');
+            var val = Lampa.Storage.get(STORAGE_KEY, 'AIzaSyDa6FISTQJBvRI61ukQbCBSRY2OCkJIx0U');
             item.find('.settings-param__value').text(val ? 'Заданы' : 'Нет').css('color', val ? '#4b5':'#f55');
             item.on('hover:enter', function() {
                 Lampa.Input.edit({ title: 'Keys', value: val, free: true, nosave: true }, function(v) { 
