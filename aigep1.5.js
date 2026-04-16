@@ -2,8 +2,8 @@
     'use strict';
 
     // === НАЛАШТУВАННЯ ===
-    var TARGET_MODEL = 'gemini-1.5-flash';
-    var STORAGE_KEY = 'gemini_legacy_flash_key';
+    var TARGET_MODEL = 'gemini-2.5-flash-lite';
+    var STORAGE_KEY = 'gemini_lite_key_v1';
     
     // ГЛОБАЛЬНА ІСТОРІЯ
     window.plugin_ai_session_ids = window.plugin_ai_session_ids || new Set();
