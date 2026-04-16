@@ -3,7 +3,7 @@
 
     // === НАЛАШТУВАННЯ ===
     var TARGET_MODEL = 'gemini-1.5-flash';
-    var STORAGE_KEY = 'google_native_key_v1';
+    var STORAGE_KEY = 'gemini_legacy_flash_key';
     
     // ГЛОБАЛЬНА ІСТОРІЯ
     window.plugin_ai_session_ids = window.plugin_ai_session_ids || new Set();
