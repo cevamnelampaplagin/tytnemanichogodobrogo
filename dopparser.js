@@ -139,6 +139,11 @@
       settings: { url: 'http://jackettua.mooo.com', key: 'ua', parser_torrent_type: 'jackett' }
     },
     {
+      base: '407_xyz',
+      name: '407_xyz12',
+      settings: { url: 'http://11.307407.xyz', key: '', parser_torrent_type: 'jackett' }
+    },
+    {
       base: 'melo',
       name: 'sngHZ13?',
       settings: { url: 'http://91.238.104.82:888', key: 'jacred93ua', parser_torrent_type: 'jackett' }
