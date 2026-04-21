@@ -500,7 +500,7 @@
 		var videoHeight = originalVideo.videoHeight || 9;
 		var aspectRatio = videoWidth / videoHeight;
 
-		var pipWidth = 512;
+		var pipWidth = 256;
 		var pipHeight = Math.round(pipWidth / aspectRatio);
 
 		pipContainer.style.width = pipWidth + "px";
