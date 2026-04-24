@@ -16,7 +16,7 @@
         { base: 'otlampa', shortName: 'vsyake', name: 'Всяке різне (7)', url: 'http://87.120.84.218:9117', settings: { key: '333', parser_torrent_type: 'jackett' } },
         { base: 'jac_red', shortName: 'Jac.red', name: 'Jac.red (11)', url: 'Jac.red', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'jac_stull', shortName: 'Jac.Stull', name: 'Jac.stull (12)', url: 'jac.stull.xyz', settings: { key: '1', parser_torrent_type: 'jackett' } },
-        { base: 'jacred_stream', shortName: 'Jacred.Stream', name: 'Jacred stream (14)', url: 'jacred.stream', settings: { key: '', parser_torrent_type: 'jackett' } },
+        { base: 'jacred_stream', shortName: 'Jacred.Stream', name: 'Jacred stream (14)', url: 'jacred.stream', settings: { key: 'pp', parser_torrent_type: 'jackett' } },
         { base: '407_xyz', shortName: '407_xyz', name: '407_xyz (12)', url: '11.307407.xyz', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'jac_red_ru', shortName: 'Jac-red.ru', name: 'Jac-red.ru (12)', url: 'jac-red.ru', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'jr_maxvol', shortName: 'Jr.Maxvol', name: 'Jr.Maxvol.pro (11)', url: 'jr.maxvol.pro', settings: { key: '', parser_torrent_type: 'jackett' } },
