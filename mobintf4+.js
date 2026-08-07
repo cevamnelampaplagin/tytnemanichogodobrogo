@@ -2,6 +2,10 @@
     'use strict';
 
     // 1. Ініціалізація налаштувань
+    // Стан та конфіг
+    var slideshowTimer = null; 
+    var detailsCache = {}; // Кеш для даних TMDB, щоб уникнути повторних запитів
+    var currentActiveId = null;
     // https://crowley38.github.io/Mobile_Interface.js
     var settings_list = [
         { id: 'mobile_interface_animation', default: false },
@@ -36,7 +40,8 @@
         return /android|iphone|ipad|ipod|mobile/.test(ua);
     }
 
-    var pluginPath = 'https://crowley38.github.io/Icons/';
+    // var pluginPath = 'https://crowley38.github.io/Icons/';
+    var pluginPath = 'https://crowley24.github.io/Icons/';
     var svgIcons = {
         '4K': pluginPath + '4K.svg',
         '2K': pluginPath + '2K.svg',
