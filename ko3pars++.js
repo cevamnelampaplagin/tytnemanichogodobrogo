@@ -9,7 +9,8 @@
     var PROXY_PREFIX    = 'https://parserbridge.lampame.v6.rocks/';
 
     var DEFAULT_PARSERS = [
-        { base: 'lampa_ua', shortName: 'LampaUA', name: 'LampaUA (toloka, mazepa.)', url: 'jackettua.mooo.com', displayUrl: 'http://jackettua.mooo.com', settings: { key: 'ua', parser_torrent_type: 'jackett' } },
+        { base: 'lampa_uaj', shortName: 'LampaUAj', name: 'LampaUA jackett (toloka, mazepa.)', url: 'jackettua.mooo.com', displayUrl: 'http://jackettua.mooo.com', settings: { key: 'ua', parser_torrent_type: 'jackett' } },
+        { base: 'lampa_ua', shortName: 'LampaUA', name: 'LampaUA (toloka, mazepa.)', url: 'lampaua.mooo.com', displayUrl: 'http://lampaua.mooo.com', settings: { key: '1', parser_torrent_type: 'jackett' } },
         { base: 'spawnum_duckdns_org_49117', shortName: 'Spawn (1)', name: 'SpawnUA (toloka, mazepa only)', url: 'http://spawnum.duckdns.org:49117', settings: { key: '2', parser_torrent_type: 'jackett' } },
         { base: 'spawnum_duckdns_org_59117', shortName: 'Spawn (2)', name: 'SpawnUA (toloka, mazepa, etc.)', url: 'http://spawnum.duckdns.org:59117', settings: { key: '2', parser_torrent_type: 'jackett' } },
         { base: 'spawpp_ua_59117', shortName: 'Spawnpp', name: 'SpawnppUA (toloka, mazepa, etc.)', url: 'http://spawn.pp.ua:59117', settings: { key: '2', parser_torrent_type: 'jackett' } },
