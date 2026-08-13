@@ -124,7 +124,7 @@
             var TRASH_KEY = 'lampaCacheEditorTrash';
             var TRASH_RETENTION_DAYS = 7;
             var TRASH_MAX_ITEMS = 300;
-            var STORAGE_QUOTA_BYTES = 5 * 1024 * 1024; // орієнтовний ліміт localStorage (~5 МБ у більшості браузерів)
+            var STORAGE_QUOTA_BYTES = 4.88 * 1024 * 1024; // орієнтовний ліміт localStorage (~5 МБ у більшості браузерів)
             var TECHNICAL_KEYS = [TRASH_KEY];
 
             var sort_mode = 'size';  // 'size' | 'name' | 'date'
