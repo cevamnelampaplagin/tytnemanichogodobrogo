@@ -3,7 +3,7 @@
     'use strict';
 
     var PLUGIN_VERSION = '1.0.5.1';
-    var PLUGIN_AUTHOR = '@Yaroslav_Films';
+    var PLUGIN_AUTHOR = '@Yaroslav_Films'moded by 'cevamnelampaplagin';
 
     // ==========================================
     // СТИЛІ РЕДАКТОРА (З АДАПТАЦІЄЮ ПІД МОБІЛЬНІ ТА БЕКДРОПИ) 1.0.5.1 — додано відображення розміру кешу та багато іншого cevamnelampaplagin
