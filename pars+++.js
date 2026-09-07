@@ -21,10 +21,10 @@
         { base: 'alco1', shortName: 'alcoV1', name: 'alco v1 (??+)', url: 'https://alpacv1filt.pubgpityx.workers.dev/', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'jac_stull', shortName: 'Jac.Stull', name: 'Jac.stull (12)', url: 'jac.stull.xyz', settings: { key: '1', parser_torrent_type: 'jackett' } },
         { base: 'jacred_stream', shortName: 'Jacred.Stream', name: 'Jacred stream (14)', url: 'jacred.stream', settings: { key: 'pp', parser_torrent_type: 'jackett' } },
-        { base: '12407_xyz', shortName: '12407_xyz', name: '407_xyz (12)', url: '12.307407.xyz', settings: { key: '12307407', parser_torrent_type: 'jackett' } },
+        { base: '12407_xyz', shortName: '12407_xyz', name: '12407_xyz (12)', url: '12.307407.xyz', settings: { key: '12307407', parser_torrent_type: 'jackett' } },
         { base: '10407_xyz', shortName: '10407_xyz', name: '10407_xyz (??)', url: '10.307407.xyz', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'num407_xyz', shortName: 'num407_xyz', name: 'num407_xyz (??)', url: 'numprs.307407.xyz', settings: { key: '', parser_torrent_type: 'jackett' } },
-        { base: 'nmjc', shortName: 'nmjc', name: '10407_xyz (??)', url: 'nmjc.duckdns.org', settings: { key: '', parser_torrent_type: 'jackett' } },
+        { base: 'nmjc', shortName: 'nmjc', name: 'nmjc (??)', url: 'nmjc.duckdns.org', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'jac_red_ru', shortName: 'Jac-red.ru', name: 'Jac-red.ru (12)', url: 'jac-red.ru', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'jr_maxvol', shortName: 'Jr.Maxvol', name: 'Jr.Maxvol.pro (11)', url: 'jr.maxvol.pro', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'maxvol_pro', shortName: 'Jac.Maxvol', name: 'Jac.Maxvol.pro', url: 'jac.maxvol.pro', settings: { key: '1', parser_torrent_type: 'jackett' } }
