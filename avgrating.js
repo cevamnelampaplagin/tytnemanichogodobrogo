@@ -1,6 +1,7 @@
 (function () {
     'use strict';
 // orig from @Yaroslav_Films, mod simkl + average (~) added 050926
+// added MAL + Shikimori mb cors 120926
     var COMPONENT_NAME = 'omdb_config_ui';
     var RATINGS_PREFIX = 'omdb_rating_toggle_';
     var CONTAINER_CLASS = 'omdb-mdb-yarik-rate';
@@ -11,11 +12,13 @@
 
     var avgSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Crect width='24' height='24' rx='5.5' fill='%23ffffff'/%3E%3Cpath d='M4.2 13.6c2.2-4 4.3-4 6.5 0 2.2 4 4.3 4 6.5 0 1.1-2 2.15-2.55 3.6-1.9' fill='none' stroke='%23111111' stroke-width='2.25' stroke-linecap='round'/%3E%3C/svg%3E";
 
+    var malSvg = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Crect width='24' height='24' rx='4' fill='%232e51a2'/%3E%3Ctext x='12' y='16.5' font-family='Arial, Helvetica, sans-serif' font-size='10' font-weight='bold' text-anchor='middle' fill='%23ffffff'%3EMAL%3C/text%3E%3C/svg%3E";
+
     var renderOrder = {
         'avg': 0,
         'oscar': 1, 'award': 2, 'tmdb': 3, 'imdb': 4, 'rt': 5,
         'mc': 6, 'trakt': 7, 'cub': 8, 'popcorn': 9, 'mdblist': 10, 'letterboxd': 11,
-        'simkl': 12
+        'simkl': 12, 'mal': 13
     };
 
     var icons = {
@@ -31,7 +34,8 @@
         popcorn: 'https://upload.wikimedia.org/wikipedia/commons/d/da/Rotten_Tomatoes_positive_audience.svg',
         letterboxd: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Letterboxd_2023_logo.png',
         simkl: simklSvg,
-        avg: avgSvg
+        avg: avgSvg,
+        mal: malSvg
     };
 
     var availableRatings = [
@@ -46,7 +50,8 @@
         { key: 'mdblist', name: 'MDBList Score', default: true },
         { key: 'letterboxd', name: 'Letterboxd', default: true },
         { key: 'awards', name: 'Нагороди (Awards)', default: true },
-        { key: 'simkl', name: 'Simkl', default: true }
+        { key: 'simkl', name: 'Simkl', default: true },
+        { key: 'mal', name: 'MyAnimeList', default: true }
     ];
 
     var style = $('<style>\
@@ -293,6 +298,208 @@
             });
         };
 
+        var requestMAL = function() {
+            if (!isRatingEnabled('mal')) return;
+
+            // Prefer original title (romaji/Japanese) — localized titles often fail
+            var titles = [];
+            if (movie.original_title) titles.push(movie.original_title);
+            if (movie.original_name) titles.push(movie.original_name);
+            if (movie.title && titles.indexOf(movie.title) === -1) titles.push(movie.title);
+            if (movie.name && titles.indexOf(movie.name) === -1) titles.push(movie.name);
+            if (!titles.length) return;
+
+            var year = ((movie.release_date || movie.first_air_date || '') + '').substring(0, 4);
+            var clientId = Lampa.Storage.get('mal_api_key', '');
+
+            // Android / native has no CORS → can use official MAL directly
+            var canUseOfficialMAL = (typeof AndroidJS !== 'undefined') ||
+                (window.Lampa && Lampa.Platform && (
+                    Lampa.Platform.is('android') ||
+                    Lampa.Platform.is('android_tv') ||
+                    (Lampa.Platform.screen && Lampa.Platform.screen('tv') === false && /Android/i.test(navigator.userAgent || ''))
+                ));
+
+            // User-defined CORS proxies (comma-separated)
+            // Examples: https://corsproxy.io/?,https://api.allorigins.win/raw?url=
+            var proxyList = (Lampa.Storage.get('mal_cors_proxies', '') || '')
+                .split(',')
+                .map(function(s) { return s.trim(); })
+                .filter(Boolean);
+
+            // ---- helpers ----
+            var isSeason2Plus = function(name) {
+                if (!name) return false;
+                var n = String(name).toLowerCase();
+                return /2nd season|3rd season|4th season|season\s*[2-9]|s[2-9]\b|第[2-9]/.test(n);
+            };
+
+            var userAskedSeason = function() {
+                var t = (titles[0] || '').toLowerCase();
+                return /season\s*[2-9]|s[2-9]\b|2nd|3rd|4th|第[2-9]/.test(t);
+            };
+
+            var pickBestFromMAL = function(list) {
+                if (!list || !list.length) return null;
+                var nodes = list.map(function(a) { return a.node || a; });
+                if (!userAskedSeason()) {
+                    nodes = nodes.filter(function(n) { return !isSeason2Plus(n.title); });
+                    if (!nodes.length) nodes = list.map(function(a) { return a.node || a; });
+                }
+                if (year) {
+                    var byYear = nodes.filter(function(n) {
+                        var start = n.start_date || '';
+                        return start.substring(0, 4) === year;
+                    });
+                    if (byYear.length) return byYear[0];
+                }
+                return nodes[0] || null;
+            };
+
+            var pickBestFromShiki = function(list) {
+                if (!list || !list.length) return null;
+                var items = list.slice();
+                if (!userAskedSeason()) {
+                    items = items.filter(function(n) { return !isSeason2Plus(n.name) && !isSeason2Plus(n.russian); });
+                    if (!items.length) items = list.slice();
+                }
+                if (year) {
+                    var byYear = items.filter(function(n) {
+                        var start = n.aired_on || '';
+                        return start.substring(0, 4) === year;
+                    });
+                    if (byYear.length) return byYear[0];
+                }
+                items.sort(function(a, b) {
+                    return (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0);
+                });
+                return items[0] || null;
+            };
+
+            var addMALScore = function(score) {
+                if (score && parseFloat(score) > 0) {
+                    addRatingBlock(container, 'rate--mal-score', icons.mal, score, 'mal');
+                }
+            };
+
+            // Build proxied URL. Supports common styles:
+            //   https://corsproxy.io/?                     → ? + encodeURIComponent(target)
+            //   https://api.allorigins.win/raw?url=        → url= + encodeURIComponent(target)
+            //   https://my-proxy.koyeb.app/                → path-style: proxy/ + target (NO full encode)
+            var buildProxyUrl = function(proxyBase, targetUrl) {
+                if (!proxyBase) return targetUrl;
+                var base = proxyBase.trim();
+
+                // Query-style proxies (corsproxy.io, allorigins, etc.)
+                if (base.indexOf('url=') !== -1 || /[?&]$/.test(base) || base.indexOf('?') !== -1) {
+                    // ensure it ends properly
+                    if (base.indexOf('url=') !== -1 && !/[?&]url=$/.test(base) && base.slice(-1) !== '=') {
+                        // already has other params, just append
+                    }
+                    return base + encodeURIComponent(targetUrl);
+                }
+
+                // Path-style proxies (cors-anywhere, koyeb self-hosted, etc.)
+                // Correct form: https://proxy.app/https://api.example.com/path?q=...
+                // Do NOT encode the whole target — keep / and ? intact
+                if (base.slice(-1) !== '/') base += '/';
+                return base + targetUrl;
+            };
+
+            // ---- Shikimori (CORS-friendly, score ≈ MAL) ----
+            var tryShikimori = function(titleIdx) {
+                if (titleIdx >= titles.length) return;
+                var q = titles[titleIdx];
+                $.ajax({
+                    url: 'https://shikimori.io/api/animes?search=' + encodeURIComponent(q) + '&limit=8',
+                    dataType: 'json',
+                    headers: { 'User-Agent': 'Lampa-MAL-Plugin/1.2' },
+                    timeout: 8000,
+                    success: function(data) {
+                        var anime = pickBestFromShiki(data);
+                        if (anime && anime.score && parseFloat(anime.score) > 0) {
+                            addMALScore(anime.score);
+                        } else {
+                            tryShikimori(titleIdx + 1);
+                        }
+                    },
+                    error: function() {
+                        tryShikimori(titleIdx + 1);
+                    }
+                });
+            };
+
+            // ---- Official MAL via direct or proxy ----
+            // proxyIdx = -1 means direct (no proxy)
+            var tryOfficialMAL = function(titleIdx, proxyIdx) {
+                if (!clientId) {
+                    tryShikimori(0);
+                    return;
+                }
+                if (titleIdx >= titles.length) {
+                    // all titles failed → Shikimori
+                    tryShikimori(0);
+                    return;
+                }
+
+                var q = titles[titleIdx];
+                var target = 'https://api.myanimelist.net/v2/anime?q=' + encodeURIComponent(q) +
+                             '&limit=8&fields=id,title,mean,start_date';
+
+                var url = target;
+                var headers = { 'X-MAL-CLIENT-ID': clientId };
+
+                if (proxyIdx >= 0 && proxyIdx < proxyList.length) {
+                    url = buildProxyUrl(proxyList[proxyIdx], target);
+                    // some proxies strip custom headers; we still try
+                }
+
+                $.ajax({
+                    url: url,
+                    headers: headers,
+                    dataType: 'json',
+                    timeout: 10000,
+                    success: function(data) {
+                        // some proxies wrap the response
+                        if (data && data.contents && typeof data.contents === 'string') {
+                            try { data = JSON.parse(data.contents); } catch (e) {}
+                        }
+                        var anime = data && data.data ? pickBestFromMAL(data.data) : null;
+                        if (anime && anime.mean) {
+                            addMALScore(anime.mean);
+                        } else {
+                            // try next title with same proxy
+                            tryOfficialMAL(titleIdx + 1, proxyIdx);
+                        }
+                    },
+                    error: function() {
+                        if (proxyIdx + 1 < proxyList.length) {
+                            // next proxy, same title
+                            tryOfficialMAL(titleIdx, proxyIdx + 1);
+                        } else if (proxyIdx === -1 && proxyList.length) {
+                            // direct failed → start proxy chain
+                            tryOfficialMAL(titleIdx, 0);
+                        } else {
+                            // all proxies exhausted → Shikimori
+                            tryShikimori(0);
+                        }
+                    }
+                });
+            };
+
+            // Decision tree
+            if (canUseOfficialMAL && clientId) {
+                // Android → direct official MAL
+                tryOfficialMAL(0, -1);
+            } else if (clientId && proxyList.length) {
+                // Browser + user gave proxies → try proxies first
+                tryOfficialMAL(0, 0);
+            } else {
+                // Browser without proxies → Shikimori
+                tryShikimori(0);
+            }
+        };
+
         var requestMDBList = function(id) {
             var onDone = function() { requestSimkl(id); };
             var key = Lampa.Storage.get('mdblist_api_key', '');
@@ -333,6 +540,8 @@
                 }
             }).always(onDone);
         };
+
+        requestMAL();
 
         if (imdb_id) requestOMDB(imdb_id);
         else if (movie.id) {
@@ -412,6 +621,50 @@
                     Lampa.Input.edit({ title: 'Simkl Client ID', value: Lampa.Storage.get('simkl_api_key', ''), free: true, nosave: true }, function(newValue) {
                         Lampa.Storage.set('simkl_api_key', newValue);
                         valEl.text(newValue || 'Не встановлено');
+                    });
+                });
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: COMPONENT_NAME,
+            param: { name: "mal_api_key_set", type: "static" },
+            field: { name: "MyAnimeList Client ID", description: "Встановити ключ" },
+            onRender: function (item) {
+                var currentKey = Lampa.Storage.get('mal_api_key', '');
+                var valEl = $('<div class="omdb-api-val">' + (currentKey || 'Не встановлено') + '</div>');
+                item.find('.settings-param__descr').after(valEl);
+                item.on('hover:enter', function() {
+                    Lampa.Input.edit({ title: 'MyAnimeList Client ID', value: Lampa.Storage.get('mal_api_key', ''), free: true, nosave: true }, function(newValue) {
+                        Lampa.Storage.set('mal_api_key', newValue);
+                        valEl.text(newValue || 'Не встановлено');
+                    });
+                });
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: COMPONENT_NAME,
+            param: { name: "mal_cors_proxies_set", type: "static" },
+            field: { 
+                name: "CORS-проксі для MAL", 
+                description: "Через кому. Приклад: https://corsproxy.io/?,https://api.allorigins.win/raw?url=" 
+            },
+            onRender: function (item) {
+                var current = Lampa.Storage.get('mal_cors_proxies', '');
+                var short = current ? (current.length > 40 ? current.substring(0, 37) + '...' : current) : 'Немає (лише Shikimori)';
+                var valEl = $('<div class="omdb-api-val">' + short + '</div>');
+                item.find('.settings-param__descr').after(valEl);
+                item.on('hover:enter', function() {
+                    Lampa.Input.edit({ 
+                        title: 'CORS-проксі (через кому)', 
+                        value: Lampa.Storage.get('mal_cors_proxies', ''), 
+                        free: true, 
+                        nosave: true 
+                    }, function(newValue) {
+                        Lampa.Storage.set('mal_cors_proxies', (newValue || '').trim());
+                        var s = newValue ? (newValue.length > 40 ? newValue.substring(0, 37) + '...' : newValue) : 'Немає (лише Shikimori)';
+                        valEl.text(s);
                     });
                 });
             }
