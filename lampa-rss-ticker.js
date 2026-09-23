@@ -38,7 +38,43 @@
     // Публічні API для курсів (без ключів)
     var RATES_API = {
         nbu: 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json',
-        coingecko: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,uah&include_24hr_change=true'
+        coingecko: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,uah&include_24hr_change=true',
+        // ePalne — ціни на паливо (потрібен X-Api-Key)
+        fuel: 'https://api.epalne.com.ua/v1/today'
+    };
+
+    var FUEL_API_KEY_DEFAULT = 'epk_7331c89d25d42dea0cbbde55174c593c4e2cd3203900083e';
+
+    var FUEL_REGION_OPTS = {
+        'kievskaya': 'Київська',
+        'lvovskaya': 'Львівська',
+        'odesskaya': 'Одеська',
+        'harkovskaya': 'Харківська',
+        'dnepropetrovskaya': 'Дніпропетровська',
+        'zaporozhskaya': 'Запорізька',
+        'vinnickaya': 'Вінницька',
+        'poltavskaya': 'Полтавська',
+        'chernigovskaya': 'Чернігівська',
+        'sumskaya': 'Сумська',
+        'zhitomirskaya': 'Житомирська',
+        'chernovickaya': 'Чернівецька',
+        'ivanofrankovskaya': 'Івано-Франківська',
+        'ternopolskaya': 'Тернопільська',
+        'rovenskaya': 'Рівненська',
+        'volynskaya': 'Волинська',
+        'hmelnickaya': 'Хмельницька',
+        'kirovogradskaya': 'Кіровоградська',
+        'nikolaevskaya': 'Миколаївська',
+        'hersonskaya': 'Херсонська',
+        'cherkasskaya': 'Черкаська'
+    };
+
+    var FUEL_TYPE_OPTS = {
+        'a95': 'А-95',
+        'a95plus': 'А-95+',
+        'a92': 'А-92',
+        'diesel': 'ДП (дизель)',
+        'gas': 'Газ (LPG)'
     };
 
     // Ланцюжок CORS-проксі (fallback)
@@ -78,7 +114,13 @@
         rss_max_per_feed: '5',    // скільки новин брати з кожного джерела
         rss_currencies:   'USD,EUR,PLN', // які валюти показувати
         rss_cryptos:      'BTC,ETH,SOL', // які крипто
-        rss_custom_proxy: ''     // власний CORS-проксі (напр. Cloudflare Worker), пробується першим
+        rss_custom_proxy: '',     // власний CORS-проксі (напр. Cloudflare Worker), пробується першим
+        // Ціни на паливо (ePalne)
+        rss_fuel_prices:  true,
+        rss_fuel_region:  'kievskaya',
+        rss_fuel_type:    'a95',
+        rss_fuel_companies: 'ОККО,WOG,SOCAR,AMIC,UPG,UKRNAFTA,KLO',
+        rss_fuel_api_key: ''      // якщо порожньо — береться вбудований ключ
     };
 
     function get(key) {
@@ -419,6 +461,83 @@
             });
     }
 
+    function fetchFuelPrices() {
+        if (!get('rss_fuel_prices')) return Promise.resolve([]);
+
+        var region = (get('rss_fuel_region') || 'kievskaya').trim();
+        var fuel   = (get('rss_fuel_type') || 'a95').trim().toLowerCase();
+        var key    = (get('rss_fuel_api_key') || '').trim() || FUEL_API_KEY_DEFAULT;
+        var url    = RATES_API.fuel + '?region=' + encodeURIComponent(region) + '&fuel=' + encodeURIComponent(fuel);
+
+        var wanted = parseSelectedList(get('rss_fuel_companies'), 'ОККО,WOG,SOCAR,AMIC,UPG,UKRNAFTA,KLO');
+        // нормалізуємо імена для порівняння (без регістру, без зайвих пробілів)
+        var wantedNorm = wanted.map(function (s) { return s.toLowerCase().replace(/\s+/g, ''); });
+
+        function parseFuelJson(text) {
+            var data = typeof text === 'string' ? JSON.parse(text) : text;
+            var list = (data && data.prices) || [];
+            if (!list.length) return [];
+
+            var parts = [];
+            var fuelLabel = (FUEL_TYPE_OPTS[fuel] || fuel).replace(/\s*\(.*\)/, '');
+
+            // якщо список компаній заданий — фільтруємо; інакше беремо топ за ціною (дешевші спочатку)
+            var filtered = list;
+            if (wantedNorm.length) {
+                filtered = list.filter(function (row) {
+                    var n = (row.company || '').toLowerCase().replace(/\s+/g, '');
+                    return wantedNorm.some(function (w) {
+                        return n === w || n.indexOf(w) !== -1 || w.indexOf(n) !== -1;
+                    });
+                });
+                // зберігаємо порядок як у налаштуванні
+                filtered.sort(function (a, b) {
+                    var na = (a.company || '').toLowerCase().replace(/\s+/g, '');
+                    var nb = (b.company || '').toLowerCase().replace(/\s+/g, '');
+                    var ia = wantedNorm.findIndex(function (w) { return na === w || na.indexOf(w) !== -1 || w.indexOf(na) !== -1; });
+                    var ib = wantedNorm.findIndex(function (w) { return nb === w || nb.indexOf(w) !== -1 || w.indexOf(nb) !== -1; });
+                    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+                });
+            } else {
+                filtered = list.slice().sort(function (a, b) { return (a.price || 999) - (b.price || 999); }).slice(0, 8);
+            }
+
+            filtered.forEach(function (row) {
+                if (row.price == null || isNaN(row.price)) return;
+                var arrow = changeArrow(row.changePct);
+                parts.push((row.company || '?') + ' ' + formatNum(row.price, 2) + arrow);
+            });
+
+            if (!parts.length) return [];
+            return ['⛽ ' + fuelLabel + ': ' + parts.join('  ·  ')];
+        }
+
+        // Прямий запит з API-ключем (CORS: *)
+        function fetchWithKey() {
+            return fetch(url, {
+                cache: 'no-store',
+                mode: 'cors',
+                headers: { 'X-Api-Key': key, 'Accept': 'application/json' }
+            }).then(function (r) {
+                if (!r.ok) throw new Error('Fuel HTTP ' + r.status);
+                return r.text();
+            });
+        }
+
+        // Fallback через проксі (ключ у query не передаємо — проксі можуть його відрізати,
+        // тому спочатку прямий запит)
+        return fetchWithKey()
+            .then(parseFuelJson)
+            .catch(function (err) {
+                console.warn('[RSS] Fuel direct failed, trying proxies', err && err.message);
+                return smartFetch(url, false).then(parseFuelJson);
+            })
+            .catch(function (err) {
+                console.warn('[RSS] Fuel prices failed', err && err.message);
+                return [];
+            });
+    }
+
     // =============================================
     // НОВИНИ (RSS)
     // =============================================
@@ -555,8 +674,8 @@
         var showRates = get('rss_show_rates');
         var showNews  = get('rss_show_news');
 
-        if (!showRates && !showNews) {
-            setText('Увімкніть блок курсів або новин у налаштуваннях.');
+        if (!showRates && !showNews && !get('rss_fuel_prices')) {
+            setText('Увімкніть блок курсів, новин або цін на паливо у налаштуваннях.');
             _fetching = false;
             return;
         }
@@ -567,12 +686,14 @@
             })
             : Promise.resolve([]);
 
+        var fuelP = fetchFuelPrices(); // незалежно від блоку курсів — свій тумблер
+
         var newsP = showNews ? fetchNews() : Promise.resolve([]);
 
-        Promise.all([rateP, newsP])
+        Promise.all([rateP, fuelP, newsP])
             .then(function (results) {
-                var rates = results[0] || [];
-                var news  = results[1] || [];
+                var rates = [].concat(results[0] || [], results[1] || []);
+                var news  = results[2] || [];
                 var text  = buildTickerText(rates, news);
 
                 if ((!rates.length && !news.length)) {
@@ -673,6 +794,31 @@
             onChange: function () { scheduleRefresh(); }
         });
 
+        // --- Ціни на паливо (ePalne) ---
+        Lampa.SettingsApi.addParam({
+            component: 'rss_ticker',
+            param: { name: 'rss_fuel_prices', type: 'trigger', default: true },
+            field: {
+                name: 'Ціни на паливо',
+                description: 'Актуальні ціни АЗС (ePalne / minfin), окремо від новин про паливо'
+            },
+            onChange: function () { scheduleRefresh(); }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'rss_ticker',
+            param: { name: 'rss_fuel_region', type: 'select', values: FUEL_REGION_OPTS, default: DEFAULTS.rss_fuel_region },
+            field: { name: 'Область (ціни палива)', description: 'Регіон для цін АЗС' },
+            onChange: function () { scheduleRefresh(); }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'rss_ticker',
+            param: { name: 'rss_fuel_type', type: 'select', values: FUEL_TYPE_OPTS, default: DEFAULTS.rss_fuel_type },
+            field: { name: 'Тип палива', description: 'А-95, дизель, газ тощо' },
+            onChange: function () { scheduleRefresh(); }
+        });
+
         // Вибір валют (через input)
         function addTextInput(key, label, desc) {
             Lampa.SettingsApi.addParam({
@@ -697,6 +843,9 @@
 
         addTextInput('rss_currencies', 'Які валюти показувати', 'Наприклад: USD,EUR,PLN,GBP');
         addTextInput('rss_cryptos', 'Які крипто показувати', 'Наприклад: BTC,ETH,SOL,USDT');
+
+        addTextInput('rss_fuel_companies', 'Які АЗС показувати', 'Наприклад: ОККО,WOG,SOCAR,AMIC (порожньо = топ-8 дешевих)');
+        addTextInput('rss_fuel_api_key', 'API-ключ ePalne (опційно)', 'Якщо порожньо — використовується вбудований');
 
         addTextInput('rss_custom_proxy', 'Свій CORS-проксі', 'URL воркера (напр. Cloudflare Worker), пробується першим, до публічних проксі');
 
