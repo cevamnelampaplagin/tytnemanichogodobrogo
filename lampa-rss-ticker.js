@@ -16,7 +16,7 @@ PROXIES=[
   {name:'codetabs',type:'raw',url:function(u){return'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u)}},
   {name:'allorigins',type:'allorigins',url:function(u){return'https://api.allorigins.win/get?url='+encodeURIComponent(u)}}
 ],
-D={rss_enabled:true,rss_show_rates:true,rss_show_news:true,rss_crypto:true,rss_currency:true,rss_crypto_news:true,rss_fuel:true,rss_news:true,rss_custom_1:'',rss_custom_2:'',rss_custom_3:'',rss_speed:'60',rss_text_color:'#ffffff',rss_bg_color:'#000000',rss_opacity:'0.75',rss_separator:'  ✦  ',rss_position:'bottom',rss_height:'36',rss_show_date:true,rss_show_source:true,rss_refresh_min:'20',rss_max_per_feed:'5',rss_currencies:'USD,EUR,PLN',rss_cryptos:'BTC,ETH,SOL',rss_custom_proxy:'',rss_fuel_prices:true,rss_fuel_region:'kievskaya',rss_fuel_type:'a95',rss_fuel_companies:'ОККО,WOG,SOCAR,AMIC,UPG,UKRNAFTA,KLO',rss_fuel_api_key:'',rss_alerts:true,rss_alerts_hide_long:true,rss_alerts_regions:'',rss_alerts_interval:'30',rss_alerts_pin:true,rss_holidays:true,rss_holidays_key:'',rss_holidays_model:'gemini-3.6-flash',rss_holidays_fallback:'all'},
+D={rss_enabled:true,rss_show_rates:true,rss_show_news:true,rss_crypto:true,rss_currency:true,rss_crypto_news:true,rss_fuel:true,rss_news:true,rss_custom_1:'',rss_custom_2:'',rss_custom_3:'',rss_speed:'60',rss_text_color:'#ffffff',rss_bg_color:'#000000',rss_opacity:'0.75',rss_separator:'  ✦  ',rss_position:'bottom',rss_height:'36',rss_show_date:true,rss_show_source:true,rss_refresh_min:'20',rss_max_per_feed:'5',rss_currencies:'USD,EUR,PLN',rss_cryptos:'BTC,ETH,SOL',rss_custom_proxy:'',rss_fuel_prices:true,rss_fuel_region:'kievskaya',rss_fuel_type:'a95',rss_fuel_companies:'ОККО,WOG,SOCAR,AMIC,UPG,UKRNAFTA,KLO',rss_fuel_api_key:'',rss_alerts:true,rss_alerts_hide_long:true,rss_alerts_regions:'',rss_alerts_interval:'30',rss_alerts_pin:true,rss_holidays:true,rss_holidays_key:'',rss_holidays_model:'gemini-3.6-flash',rss_holidays_fallback:'all',rss_holidays_count:'5'},
 CK='rss_ticker_cache_v3',CT='rss_ticker_cache_time_v3',FETCH_TO=12e3,AL='\u0001',
 AS={loaded:false,regions:[],key:'',checked:'',okAt:0,failAt:0,raw:null,method:-1},
 $box,$track,_last='',_fetchT,_alertT,_retryT,_fetching=false,_alertBusy=false,_retries=0,
@@ -332,6 +332,7 @@ var GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/',
       {id:'gemma-4-26b-a4b-it',search:false}
     ],
     HOLI_DEFAULT_KEY='AQ.Ab8RN6LF0hXLNRykYqSI1yK73YgXeGs2G3HCBDw1V-YUrLx8Sw', // використовується, якщо користувач не ввів свій
+    HOLI_ALL=20,                                   // «Усі знайдені» — запобіжник, щоб рядок не став нескінченним
     HOLI_TO=45e3,HOLI_MAX_TRIES=6,
     _holi=[],_holiBusy=false,_holiT,_holiTries=0,_holiTriesDay='';
 
@@ -377,6 +378,16 @@ function holiQueue(){
   return q;
 }
 
+// Скільки свят показувати в кожному списку (налаштування «Кількість свят»)
+function holiLimit(){var v=String(G('rss_holidays_count')||'5');return v==='all'?HOLI_ALL:Math.max(1,Math.min(HOLI_ALL,parseInt(v,10)||5))}
+
+// Чи треба перезапитати: користувач збільшив ліміт, а збережений список міг бути обрізаний старим лімітом
+function holiNeedsMore(st){
+  if(!st||st.none)return false;
+  var req=st.req||4,lim=holiLimit();
+  return req<lim&&((st.ua||[]).length>=req||(st.intl||[]).length>=req);
+}
+
 function holiPrompt(withSearch){
   var p=kyivParts(),date=p.d+' '+UA_MONTHS[p.m-1]+' '+p.y+' року ('+UA_WDAYS[p.w]+')';
   return 'Сьогодні '+date+'. '+
@@ -385,7 +396,8 @@ function holiPrompt(withSearch){
     '1) "ua" — ЛИШЕ українські: державні свята, памʼятні дні, професійні свята України, церковні свята за новоюліанським календарем ПЦУ/УГКЦ.\n'+
     '2) "intl" — ЛИШЕ міжнародні: офіційні дні ООН/ЮНЕСКО/ВООЗ та широко відомі світові дні.\n'+
     'Правила: одне свято не може бути в обох списках. Кожен пункт — коротка офіційна назва українською (до 50 символів), без пояснень, дат, емодзі й посилань. '+
-    'Не більше 4 пунктів у кожному списку, найважливіші першими. Не перекладай дослівно маловідомі американські «дні чогось» (їжі, напоїв тощо) — пропускай їх. '+
+    (holiLimit()>=HOLI_ALL?'Включи ВСІ знайдені свята (але не більше '+HOLI_ALL+' у кожному списку), найважливіші першими. ':'Не більше '+holiLimit()+' пунктів у кожному списку, найважливіші першими. ')+
+    'Не перекладай дослівно маловідомі американські «дні чогось» (їжі, напоїв тощо) — пропускай їх. '+
     'Не вигадуй: включай лише те, що підтверджено пошуком для цієї дати. Якщо нічого не знайдено — поверни порожній список. '+
     'Відповідай ЛИШЕ валідним JSON без markdown у форматі: {"ua":["..."],"intl":["..."]}';
 }
@@ -407,7 +419,7 @@ function holiParse(text){
   var mv=ua.filter(function(x){return/^(міжнародн|всесвітн|світов)/i.test(x)});
   ua=ua.filter(function(x){return mv.indexOf(x)===-1});
   intl=mv.concat(intl).filter(function(x,i,a){var k=x.toLowerCase();return a.findIndex(function(y){return y.toLowerCase()===k})===i&&(!inUa[k]||mv.indexOf(x)!==-1)});
-  var r={ua:ua.slice(0,4),intl:intl.slice(0,4)};
+  var r={ua:ua.slice(0,HOLI_ALL),intl:intl.slice(0,HOLI_ALL)}; // обрізаємо під налаштування вже при показі
   return(r.ua.length||r.intl.length)?r:{ua:[],intl:[],none:true};
 }
 
@@ -432,8 +444,10 @@ function holiFetchOne(task){
 function holiLine(h){
   if(!h||h.none||(!h.ua.length&&!h.intl.length))return[];
   var p=kyivParts(),head='🎉 Сьогодні '+p.d+' '+UA_MONTHS[p.m-1],parts=[];
-  if(h.ua.length)parts.push('🇺🇦 '+h.ua.join(', '));
-  if(h.intl.length)parts.push('🌍 '+h.intl.join(', '));
+  var lim=holiLimit(),ua=(h.ua||[]).slice(0,lim),intl=(h.intl||[]).slice(0,lim);
+  if(!ua.length&&!intl.length)return[];
+  if(ua.length)parts.push('🇺🇦 '+ua.join(', '));
+  if(intl.length)parts.push('🌍 '+intl.join(', '));
   return[head+': '+parts.join('  ·  ')];
 }
 
@@ -451,7 +465,7 @@ function holiCheck(force){
   var today=todayKey(),st=G(HOLI_KEY),had=_holi.length;
   holiApply();
   if(had!==_holi.length)rebuild();                         // настав новий день — прибрати вчорашні свята
-  if(!force&&st&&st.date===today){holiSchedule(6e5);return}
+  if(!force&&st&&st.date===today&&!holiNeedsMore(st)){holiSchedule(6e5);return}
   if(_holiTriesDay!==today){_holiTriesDay=today;_holiTries=0}
   if(force)_holiTries=0;
   if(_holiTries>=HOLI_MAX_TRIES){holiSchedule(6e5);return} // бережемо квоти: максимум 6 спроб на добу
@@ -469,18 +483,18 @@ function holiCheck(force){
       return next();
     });
   })().then(function(r){
-    r.date=today;r.at=Date.now();
+    r.date=today;r.at=Date.now();r.req=holiLimit();
     S(HOLI_KEY,r);holiApply();rebuild();
     console.log('RSS ticker: holidays OK via',r.model,r);
     if(force)Lampa.Noty.show('Свята оновлено ('+r.model+')');
     holiSchedule(6e5);
   }).catch(function(e){
     console.log('RSS ticker: holidays — усі моделі недоступні:',e&&e.message);
-    if(force)Lampa.Noty.show('Свята: сервіс недоступний або ліміти вичерпано або проблема з api');
+    if(force)Lampa.Noty.show('Свята: сервіс недоступний або ліміти вичерпано або треба інший api');
     holiSchedule([5,15,30,60,120,240][Math.min(_holiTries-1,5)]*6e4); // 5 хв → 15 → 30 → 1 год …
   }).then(function(){_holiBusy=false});
 }
-/* ===================== /СВЯТА ДНЯ ===================== */
+/* ===================== /СВЯТО ДНЯ ===================== */
 
 function newsUrls(){
   var u=[];
@@ -653,7 +667,7 @@ function registerSettings(){
   Lampa.SettingsApi.addParam({component:C,param:{name:'rss_alerts_interval',type:'select',values:{'15':'15 сек','30':'30 сек','60':'1 хв','120':'2 хв'},default:D.rss_alerts_interval},field:{name:'  · Перевіряти тривоги кожні',description:'Окремо від новин і курсів'},onChange:scheduleAlerts});
   addTrig('rss_alerts_pin','  · Закріпити статус зліва','Плашка зі статусом і часом перевірки завжди на екрані',function(){updateBadge();rebuild()});
 
-  addTrig('rss_holidays','▸ Свято дня (Gemini AI)','Раз на добу шукає в Google українські та міжнародні свята(може помилятися тому не бийте його)',function(){holiApply();rebuild();holiCheck()});
+  addTrig('rss_holidays','▸ Свято дня (Gemini AI)','Раз на добу шукає в Google українські та міжнародні свята (не бийте якщо помиляється)',function(){holiApply();rebuild();holiCheck()});
   Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_key_btn',type:'trigger',default:false},field:{name:'  · Gemini API key',description:'aistudio.google.com/apikey. Кілька ключів — через кому. Порожньо = ключ «AI Асистента» або вбудований'},onRender:function(item){
     var upd=function(){var src=holiKeySource(),n=holiKeys().length;item.find('.settings-param__value').text(src==='own'?'Свій ('+n+')':src==='ai'?'З AI Асистента':'Вбудований').css('color',src==='default'?'#fc3':'#4b5')};
     upd();
@@ -662,6 +676,7 @@ function registerSettings(){
   var hm={};HOLI_MODELS.forEach(function(m){hm[m.id]=m.id+(m.search?'':' (без пошуку)')});
   Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_model',type:'select',values:hm,default:D.rss_holidays_model},field:{name:'  · Основна модель',description:'З неї починається черга запитів'},onChange:function(){var st=G(HOLI_KEY);if(st&&st.model){st.model='';S(HOLI_KEY,st)}holiCheck(true)}});
   Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_fallback',type:'select',values:{all:'Усі моделі по черзі',off:'Вимкнено'},default:D.rss_holidays_fallback},field:{name:'  · Автоперемикання моделей',description:'При 429 / 503 / помилці — наступний ключ, потім наступна модель'}});
+  Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_count',type:'select',values:{'3':'3','5':'5','8':'8','all':'Усі знайдені (до '+HOLI_ALL+')'},default:D.rss_holidays_count},field:{name:'  · Кількість свят',description:'Скільки показувати в кожному списку (🇺🇦 і 🌍). Зменшення — миттєво, збільшення — один новий запит'},onChange:function(){holiApply();rebuild();holiCheck()}});
   Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_refresh',type:'trigger',default:false},field:{name:'  · 🔄 Оновити свята зараз',description:'Примусовий запит (витрачає квоту)'},onChange:function(){S('rss_holidays_refresh',false);Lampa.Noty.show('Запит свят…');holiCheck(true)}});
 
   addTrig('rss_show_news','▸ Новини (RSS)','Увімкнути блок новин у стрічці');
