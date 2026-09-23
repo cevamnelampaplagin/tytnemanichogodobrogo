@@ -7,14 +7,16 @@ FUEL_KEY='epk_7331c89d25d42dea0cbbde55174c593c4e2cd3203900083e',
 FUEL_REGIONS={kievskaya:'Київська',lvovskaya:'Львівська',odesskaya:'Одеська',harkovskaya:'Харківська',dnepropetrovskaya:'Дніпропетровська',zaporozhskaya:'Запорізька',vinnickaya:'Вінницька',poltavskaya:'Полтавська',chernigovskaya:'Чернігівська',sumskaya:'Сумська',zhitomirskaya:'Житомирська',chernovickaya:'Чернівецька',ivanofrankovskaya:'Івано-Франківська',ternopolskaya:'Тернопільська',rovenskaya:'Рівненська',volynskaya:'Волинська',hmelnickaya:'Хмельницька',kirovogradskaya:'Кіровоградська',nikolaevskaya:'Миколаївська',hersonskaya:'Херсонська',cherkasskaya:'Черкаська'},
 FUEL_TYPES={a95:'А-95',a95plus:'А-95+',a92:'А-92',diesel:'ДП (дизель)',gas:'Газ (LPG)'},
 PERM=['севастополь','луганська','крим','автономна республіка крим'],
+// type: 'raw' — проксі віддає відповідь як є;
+//       'corsio' — cors.io загортає відповідь у JSON-конверт {url,status,headers,body} і ЗАВЖДИ відповідає HTTP 200;
+//       'allorigins' — {contents, status:{http_code}}
 PROXIES=[
-  function(u){return'https://easy-ofilia-oslovienka-18d5d406.koyeb.app/?url='+encodeURIComponent(u)},
-  function(u){return'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u)},
-  function(u){return'https://api.allorigins.win/raw?url='+encodeURIComponent(u)},
-  function(u){return'https://api.allorigins.win/get?url='+encodeURIComponent(u)},
-  function(u){return'https://corsproxy.io/?'+encodeURIComponent(u)}
+  {name:'cors.io',type:'corsio',hdr:true,url:function(u){return'https://cors.io/?url='+encodeURIComponent(u)}},
+  {name:'koyeb',type:'raw',url:function(u){return'https://easy-ofilia-oslovienka-18d5d406.koyeb.app/?url='+encodeURIComponent(u)}},
+  {name:'codetabs',type:'raw',url:function(u){return'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u)}},
+  {name:'allorigins',type:'allorigins',url:function(u){return'https://api.allorigins.win/get?url='+encodeURIComponent(u)}}
 ],
-D={rss_enabled:true,rss_show_rates:true,rss_show_news:true,rss_crypto:true,rss_currency:true,rss_crypto_news:true,rss_fuel:true,rss_news:true,rss_custom_1:'',rss_custom_2:'',rss_custom_3:'',rss_speed:'60',rss_text_color:'#ffffff',rss_bg_color:'#000000',rss_opacity:'0.75',rss_separator:'  ✦  ',rss_position:'bottom',rss_height:'36',rss_show_date:true,rss_show_source:true,rss_refresh_min:'20',rss_max_per_feed:'5',rss_currencies:'USD,EUR,PLN',rss_cryptos:'BTC,ETH,SOL',rss_custom_proxy:'',rss_fuel_prices:true,rss_fuel_region:'kievskaya',rss_fuel_type:'a95',rss_fuel_companies:'ОККО,WOG,SOCAR,AMIC,UPG,UKRNAFTA,KLO',rss_fuel_api_key:'',rss_alerts:true,rss_alerts_hide_long:true,rss_alerts_regions:'',rss_alerts_interval:'30',rss_alerts_pin:true},
+D={rss_enabled:true,rss_show_rates:true,rss_show_news:true,rss_crypto:true,rss_currency:true,rss_crypto_news:true,rss_fuel:true,rss_news:true,rss_custom_1:'',rss_custom_2:'',rss_custom_3:'',rss_speed:'60',rss_text_color:'#ffffff',rss_bg_color:'#000000',rss_opacity:'0.75',rss_separator:'  ✦  ',rss_position:'bottom',rss_height:'36',rss_show_date:true,rss_show_source:true,rss_refresh_min:'20',rss_max_per_feed:'5',rss_currencies:'USD,EUR,PLN',rss_cryptos:'BTC,ETH,SOL',rss_custom_proxy:'',rss_fuel_prices:true,rss_fuel_region:'kievskaya',rss_fuel_type:'a95',rss_fuel_companies:'ОККО,WOG,SOCAR,AMIC,UPG,UKRNAFTA,KLO',rss_fuel_api_key:'',rss_alerts:true,rss_alerts_hide_long:true,rss_alerts_regions:'',rss_alerts_interval:'30',rss_alerts_pin:true,rss_holidays:true,rss_holidays_key:'',rss_holidays_model:'gemini-3.6-flash',rss_holidays_fallback:'all'},
 CK='rss_ticker_cache_v3',CT='rss_ticker_cache_time_v3',FETCH_TO=12e3,AL='\u0001',
 AS={loaded:false,regions:[],key:'',checked:'',okAt:0,failAt:0,raw:null,method:-1},
 $box,$track,_last='',_fetchT,_alertT,_retryT,_fetching=false,_alertBusy=false,_retries=0,
@@ -54,7 +56,7 @@ function restart(){
 
 function proxies(){
   var c=(G('rss_custom_proxy')||'').trim(),list=[];
-  if(c)list.push(function(u){return c.indexOf('?')!==-1?c+encodeURIComponent(u):c+(c.slice(-1)==='/'?'':'/')+'?url='+encodeURIComponent(u)});
+  if(c)list.push({name:'custom',type:'auto',hdr:true,url:function(u){return c.indexOf('?')!==-1?c+encodeURIComponent(u):c+(c.slice(-1)==='/'?'':'/')+'?url='+encodeURIComponent(u)}});
   return list.concat(PROXIES);
 }
 
@@ -64,20 +66,46 @@ function timedFetch(url,opt){
   return fetch(url,opt).then(function(r){clearTimeout(to);if(!r.ok)throw new Error('HTTP '+r.status);return r}).catch(function(e){clearTimeout(to);throw e});
 }
 
-function asText(r){
-  var ct=(r.headers.get('content-type')||'').toLowerCase();
-  if(ct.indexOf('json')!==-1)return r.json().then(function(d){return d&&typeof d.contents==='string'?d.contents:d&&typeof d.body==='string'?d.body:JSON.stringify(d)});
-  return r.text();
+function okStatus(n){n=Number(n);return n>=200&&n<300}
+function isCorsIo(d){return d&&typeof d==='object'&&typeof d.body==='string'&&'status'in d&&'url'in d&&'headers'in d}
+function isAllOrigins(d){return d&&typeof d==='object'&&'contents'in d&&d.status&&typeof d.status==='object'}
+
+// Розгортає відповідь проксі у «чистий» текст відповіді цільового сервера.
+// cors.io: {"url":"…","status":200,"headers":{…},"body":"<рядок>"} — HTTP завжди 200, тому справжній
+// статус беремо з поля status (404/429/530 → помилка → пробуємо наступний проксі).
+function unwrapProxy(text,type){
+  if(type==='raw')return text;
+  var d;try{d=JSON.parse(text)}catch(e){if(type==='auto')return text;throw new Error('proxy: not json')}
+  if(type==='corsio'||(type==='auto'&&isCorsIo(d))){
+    if(!isCorsIo(d))throw new Error('cors.io: bad envelope');
+    if(!okStatus(d.status))throw new Error('cors.io: upstream HTTP '+d.status);
+    return d.body;
+  }
+  if(type==='allorigins'||(type==='auto'&&isAllOrigins(d))){
+    var c=d.status&&d.status.http_code;
+    if(c&&!okStatus(c))throw new Error('allorigins: upstream HTTP '+c);
+    if(typeof d.contents!=='string')throw new Error('allorigins: empty');
+    return d.contents;
+  }
+  return text;
 }
 
 function fetchDirect(url,hdr){return timedFetch(url,{mode:'cors',headers:hdr||{}}).then(function(r){return r.text()})}
-function fetchProxy(url,fn){return timedFetch(fn(url),{}).then(asText)}
+// hdr — заголовки для цільового сервера; cors.io пересилає їх далі (напр. X-Api-Key для ePalne)
+function fetchProxy(url,px,hdr){
+  var opt={};if(hdr&&px.hdr)opt.headers=hdr;
+  return timedFetch(px.url(url),opt).then(function(r){return r.text()}).then(function(t){
+    var body=unwrapProxy(t,px.type);
+    if(body==null||!String(body).trim())throw new Error(px.name+': empty body');
+    return body;
+  });
+}
 
-function smartFetch(url,preferDirect){
+function smartFetch(url,preferDirect,hdr){
   var a=[],i=0;
-  if(preferDirect)a.push(function(){return fetchDirect(url)});
-  proxies().forEach(function(fn){a.push(function(){return fetchProxy(url,fn)})});
-  if(!preferDirect)a.push(function(){return fetchDirect(url)});
+  if(preferDirect)a.push(function(){return fetchDirect(url,hdr)});
+  proxies().forEach(function(px){if(hdr&&!px.hdr)return;a.push(function(){return fetchProxy(url,px,hdr)})}); // з API-ключем — лише через проксі, що пересилають заголовки
+  if(!preferDirect)a.push(function(){return fetchDirect(url,hdr)});
   function next(){return i>=a.length?Promise.reject(new Error('fail '+url)):a[i++]().catch(next)}
   return next();
 }
@@ -157,7 +185,7 @@ function fetchFuel(){
     return parts.length?['⛽ '+label+': '+parts.join('  ·  ')]:[];
   }
   return timedFetch(url,{mode:'cors',headers:{'X-Api-Key':key,Accept:'application/json'}}).then(function(r){return r.text()}).then(parse)
-    .catch(function(){return smartFetch(url,false).then(parse)}).catch(function(){return[]});
+    .catch(function(){return smartFetch(url,false,{'X-Api-Key':key,Accept:'application/json'}).then(parse)}).catch(function(){return[]});
 }
 
 function shortReg(n){return(n||'').replace(/\s*область\s*$/i,'').replace(/^Автономна Республіка\s+/i,'').replace(/\s*район\s*$/i,'').trim()}
@@ -226,7 +254,7 @@ function updateBadge(){
 }
 
 // Чи потрібен блок тривог у рядку, що прокручується
-function nothingElse(){return!_rates.length&&!(_news&&_news.length)}
+function nothingElse(){return!_rates.length&&!_holi.length&&!(_news&&_news.length)}
 function alertInScroll(){return!!G('rss_alerts')&&(!pinned()||(AS.loaded&&AS.regions.length>0)||nothingElse())}
 
 function refreshAlertView(){
@@ -253,7 +281,7 @@ function nativeText(url){
 }
 function alertMethods(){
   var m=[function(u){return nativeText(u)},function(u){return fetchDirect(u)}];
-  proxies().forEach(function(fn){m.push(function(u){return fetchProxy(u,fn)})});
+  proxies().forEach(function(px){m.push(function(u){return fetchProxy(u,px)})});
   return m;
 }
 function fetchAlertData(){
@@ -289,6 +317,170 @@ function pollAlerts(){
     _alertT=setTimeout(pollAlerts,AS.failAt?Math.min(1e4,alertMs()):alertMs());
   });
 }
+
+/* ======================= СВЯТО ДНЯ (Gemini + Google Search) ======================= */
+var GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/',
+    HOLI_KEY='rss_holidays_data_v1',
+    HOLI_MODELS=[                                   // порядок = порядок автоперемикання
+      {id:'gemini-3.6-flash',search:true},
+      {id:'gemini-3.5-flash-lite',search:true},
+      {id:'gemini-3.1-flash-lite',search:true},
+      {id:'gemini-3.5-flash',search:true},
+      {id:'gemini-2.5-flash-lite',search:true},
+      {id:'gemini-2.5-flash',search:true},
+      {id:'gemma-4-31b-it',search:false},           // Gemma не вміє Google Search — лише останній резерв
+      {id:'gemma-4-26b-a4b-it',search:false}
+    ],
+    HOLI_DEFAULT_KEY='AQ.Ab8RN6LF0hXLNRykYqSI1yK73YgXeGs2G3HCBDw1V-YUrLx8Sw', // використовується, якщо користувач не ввів свій
+    HOLI_TO=45e3,HOLI_MAX_TRIES=6,
+    _holi=[],_holiBusy=false,_holiT,_holiTries=0,_holiTriesDay='';
+
+var UA_MONTHS=['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'],
+    UA_WDAYS=['неділя','понеділок','вівторок','середа','четвер','пʼятниця','субота'];
+
+// Календарна дата саме за Києвом (навіть якщо на ТВ інший часовий пояс)
+function kyivParts(){
+  var d=new Date();
+  try{
+    var f=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}).formatToParts(d),o={};
+    f.forEach(function(p){o[p.type]=p.value});
+    if(o.year&&o.month&&o.day){
+      var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(o.weekday);
+      return{y:+o.year,m:+o.month,d:+o.day,w:wd<0?d.getDay():wd};
+    }
+  }catch(e){}
+  return{y:d.getFullYear(),m:d.getMonth()+1,d:d.getDate(),w:d.getDay()};
+}
+function todayKey(){var p=kyivParts();return p.y+'-'+pad(p.m)+'-'+pad(p.d)}
+
+// Пріоритет: свій ключ у тікері → ключ плагіна «AI Асистент» → вбудований ключ за замовчуванням
+function holiKeySource(){
+  if((G('rss_holidays_key')||'').trim())return'own';
+  if((Lampa.Storage.get('google_native_key_v1')||'').trim())return'ai';
+  return'default';
+}
+function holiKeys(){
+  var src=holiKeySource(),raw=src==='own'?G('rss_holidays_key'):src==='ai'?Lampa.Storage.get('google_native_key_v1'):HOLI_DEFAULT_KEY;
+  return String(raw||'').split(',').map(function(k){return k.trim()}).filter(Boolean);
+}
+
+// Черга як у AI Асистенті: основна модель на всіх ключах → резервні моделі на всіх ключах
+function holiQueue(){
+  var keys=holiKeys(),primary=G('rss_holidays_model')||HOLI_MODELS[0].id,q=[],models=[],last=G(HOLI_KEY),
+      lastOk=last&&last.model&&last.model!==primary&&G('rss_holidays_fallback')!=='off'?last.model:'';
+  var find=function(id){for(var i=0;i<HOLI_MODELS.length;i++)if(HOLI_MODELS[i].id===id)return HOLI_MODELS[i];return{id:id,search:id.indexOf('gemini')===0}};
+  // спочатку модель, яка спрацювала минулого разу (щоб не палити запити на 429), потім основна, потім решта
+  if(lastOk)models.push(find(lastOk));
+  models.push(find(primary));
+  if(G('rss_holidays_fallback')!=='off')HOLI_MODELS.forEach(function(m){if(m.id!==primary&&m.id!==lastOk)models.push(m)});
+  models.forEach(function(m){keys.forEach(function(k){q.push({model:m.id,search:m.search,key:k})})});
+  return q;
+}
+
+function holiPrompt(withSearch){
+  var p=kyivParts(),date=p.d+' '+UA_MONTHS[p.m-1]+' '+p.y+' року ('+UA_WDAYS[p.w]+')';
+  return 'Сьогодні '+date+'. '+
+    (withSearch?'Обовʼязково скористайся пошуком Google за запитом «які сьогодні свята локальні в Україні і міжнародні» ('+p.d+' '+UA_MONTHS[p.m-1]+'). ':'')+
+    'Склади перелік свят і памʼятних днів саме на цю дату:\n'+
+    '1) "ua" — ЛИШЕ українські: державні свята, памʼятні дні, професійні свята України, церковні свята за новоюліанським календарем ПЦУ/УГКЦ.\n'+
+    '2) "intl" — ЛИШЕ міжнародні: офіційні дні ООН/ЮНЕСКО/ВООЗ та широко відомі світові дні.\n'+
+    'Правила: одне свято не може бути в обох списках. Кожен пункт — коротка офіційна назва українською (до 50 символів), без пояснень, дат, емодзі й посилань. '+
+    'Не більше 4 пунктів у кожному списку, найважливіші першими. Не перекладай дослівно маловідомі американські «дні чогось» (їжі, напоїв тощо) — пропускай їх. '+
+    'Не вигадуй: включай лише те, що підтверджено пошуком для цієї дати. Якщо нічого не знайдено — поверни порожній список. '+
+    'Відповідай ЛИШЕ валідним JSON без markdown у форматі: {"ua":["..."],"intl":["..."]}';
+}
+
+function holiParse(text){
+  if(!text)return null;
+  var t=String(text).replace(/```json/gi,'').replace(/```/g,'').trim(),obj=null;
+  try{obj=JSON.parse(t)}catch(e){var m=t.match(/\{[\s\S]*\}/);if(m)try{obj=JSON.parse(m[0])}catch(e2){}}
+  if(!obj||typeof obj!=='object')return null;
+  var clean=function(a){
+    if(!Array.isArray(a))return[];
+    var seen={};
+    return a.map(function(s){return String(s||'').replace(/\[\d+(,\s*\d+)*\]/g,'').replace(/\s+/g,' ').replace(/^[\s\-–•*]+|[\s.;]+$/g,'').trim()})
+            .filter(function(s){var k=s.toLowerCase();if(s.length<3||s.length>70||seen[k])return false;seen[k]=1;return true});
+  };
+  var ua=clean(obj.ua||obj.ukraine),intl=clean(obj.intl||obj.international),inUa={};
+  ua.forEach(function(x){inUa[x.toLowerCase()]=1});
+  // «Міжнародний/Всесвітній …» в українському списку → переносимо в міжнародні; дублікати прибираємо
+  var mv=ua.filter(function(x){return/^(міжнародн|всесвітн|світов)/i.test(x)});
+  ua=ua.filter(function(x){return mv.indexOf(x)===-1});
+  intl=mv.concat(intl).filter(function(x,i,a){var k=x.toLowerCase();return a.findIndex(function(y){return y.toLowerCase()===k})===i&&(!inUa[k]||mv.indexOf(x)!==-1)});
+  var r={ua:ua.slice(0,4),intl:intl.slice(0,4)};
+  return(r.ua.length||r.intl.length)?r:{ua:[],intl:[],none:true};
+}
+
+function holiFetchOne(task){
+  var ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(function(){ctrl&&ctrl.abort()},HOLI_TO),
+      payload={contents:[{role:'user',parts:[{text:holiPrompt(task.search)}]}]};
+  if(task.search)payload.tools=[{google_search:{}}];
+  // без Content-Type / кастомних заголовків — «простий» CORS-запит, як в AI Асистенті
+  return fetch(GEMINI_URL+task.model+':generateContent?key='+encodeURIComponent(task.key),{method:'POST',body:JSON.stringify(payload),signal:ctrl?ctrl.signal:undefined})
+    .then(function(r){return r.json().catch(function(){return{}}).then(function(j){return{status:r.status,ok:r.ok,data:j}})})
+    .then(function(res){
+      clearTimeout(to);
+      if(!res.ok)throw new Error('HTTP '+res.status+(res.data&&res.data.error?': '+res.data.error.message:''));
+      var c=res.data&&res.data.candidates&&res.data.candidates[0];
+      if(!c||!c.content||!c.content.parts)throw new Error('empty ('+(c&&c.finishReason||'no candidates')+')');
+      var txt=c.content.parts.filter(function(p){return!p.thought}).map(function(p){return p.text||''}).join('\n'),parsed=holiParse(txt);
+      if(!parsed)throw new Error('bad json');
+      return parsed;
+    },function(e){clearTimeout(to);throw e});
+}
+
+function holiLine(h){
+  if(!h||h.none||(!h.ua.length&&!h.intl.length))return[];
+  var p=kyivParts(),head='🎉 Сьогодні '+p.d+' '+UA_MONTHS[p.m-1],parts=[];
+  if(h.ua.length)parts.push('🇺🇦 '+h.ua.join(', '));
+  if(h.intl.length)parts.push('🌍 '+h.intl.join(', '));
+  return[head+': '+parts.join('  ·  ')];
+}
+
+function holiApply(){
+  var st=G(HOLI_KEY);
+  _holi=(G('rss_holidays')&&st&&st.date===todayKey())?holiLine(st):[];
+}
+
+function holiSchedule(ms){clearTimeout(_holiT);_holiT=setTimeout(holiCheck,ms)}
+
+// Викликається при старті, кожні 10 хв і після півночі: запит іде лише якщо за сьогодні ще немає даних
+function holiCheck(force){
+  clearTimeout(_holiT);
+  if(!on()||!G('rss_holidays')){if(_holi.length){_holi=[];rebuild()}return}
+  var today=todayKey(),st=G(HOLI_KEY),had=_holi.length;
+  holiApply();
+  if(had!==_holi.length)rebuild();                         // настав новий день — прибрати вчорашні свята
+  if(!force&&st&&st.date===today){holiSchedule(6e5);return}
+  if(_holiTriesDay!==today){_holiTriesDay=today;_holiTries=0}
+  if(force)_holiTries=0;
+  if(_holiTries>=HOLI_MAX_TRIES){holiSchedule(6e5);return} // бережемо квоти: максимум 6 спроб на добу
+  var q=holiQueue();
+  if(!q.length){console.log('RSS ticker: holidays — немає Gemini API key');if(force)Lampa.Noty.show('Свята: вкажіть Gemini API key');holiSchedule(6e5);return}
+  if(_holiBusy)return;
+  _holiBusy=true;_holiTries++;
+  var i=0,errs=[];
+  (function next(){
+    if(i>=q.length)return Promise.reject(new Error(errs.join(' | ')));
+    var task=q[i++];
+    return holiFetchOne(task).then(function(r){r.model=task.model;return r},function(e){
+      errs.push(task.model+': '+(e&&e.message||e));
+      console.log('RSS ticker: holidays',task.model,'failed →',e&&e.message,'| next');
+      return next();
+    });
+  })().then(function(r){
+    r.date=today;r.at=Date.now();
+    S(HOLI_KEY,r);holiApply();rebuild();
+    console.log('RSS ticker: holidays OK via',r.model,r);
+    if(force)Lampa.Noty.show('Свята оновлено ('+r.model+')');
+    holiSchedule(6e5);
+  }).catch(function(e){
+    console.log('RSS ticker: holidays — усі моделі недоступні:',e&&e.message);
+    if(force)Lampa.Noty.show('Свята: сервіс недоступний або ліміти вичерпано або проблема з api');
+    holiSchedule([5,15,30,60,120,240][Math.min(_holiTries-1,5)]*6e4); // 5 хв → 15 → 30 → 1 год …
+  }).then(function(){_holiBusy=false});
+}
+/* ===================== /СВЯТА ДНЯ ===================== */
 
 function newsUrls(){
   var u=[];
@@ -343,8 +535,8 @@ function joinTicker(rates,news){
 }
 
 function tickerText(){
-  var rates=_rates.slice();if(alertInScroll())rates.push(AL);
-  return{text:joinTicker(rates,_news||[]),empty:!_rates.length&&!(_news&&_news.length)};
+  var rates=_holi.concat(_rates);if(alertInScroll())rates.push(AL);
+  return{text:joinTicker(rates,_news||[]),empty:!rates.length||(rates.length===1&&rates[0]===AL&&!(_news&&_news.length))};
 }
 
 function saveCache(t){try{S(CK,t.split(AL).join(''));S(CT,Date.now())}catch(e){}}
@@ -361,7 +553,7 @@ function rebuild(){
 
 function fetchAll(){
   if(!on()||_fetching)return;_fetching=true;
-  if(!G('rss_show_rates')&&!G('rss_show_news')&&!G('rss_fuel_prices')&&!G('rss_alerts')){setText('Увімкніть блок курсів, новин, палива або тривог у налаштуваннях.');_fetching=false;return}
+  if(!G('rss_show_rates')&&!G('rss_show_news')&&!G('rss_fuel_prices')&&!G('rss_alerts')&&!G('rss_holidays')){setText('Увімкніть блок курсів, новин, палива або тривог у налаштуваннях.');_fetching=false;return}
   var rateP=G('rss_show_rates')?Promise.all([fetchNBU(),fetchCrypto()]).then(function(a){return[].concat(a[0]||[],a[1]||[])}):Promise.resolve([]);
   Promise.all([rateP,fetchFuel(),G('rss_show_news')?fetchNews():Promise.resolve([])])
     .then(function(r){
@@ -382,7 +574,7 @@ function fetchAll(){
 
 function clearCache(){try{S(CK,'');S(CT,0)}catch(e){}_last='';_rates=[];_news=[];_retries=0}
 
-function forceRefresh(){clearCache();_fetching=_alertBusy=false;clearTimeout(_retryT);AS.method=-1;fetchAll();pollAlerts()}
+function forceRefresh(){clearCache();_fetching=_alertBusy=false;clearTimeout(_retryT);AS.method=-1;fetchAll();pollAlerts();holiApply();rebuild()}
 
 function scheduleAlerts(){
   clearTimeout(_alertT);_alertBusy=false;
@@ -393,7 +585,7 @@ function scheduleAlerts(){
 function scheduleRefresh(){
   clearTimeout(_fetchT);clearInterval(_fetchT);clearTimeout(_retryT);_retries=0;clearCache();fetchAll();
   var m=parseInt(G('rss_refresh_min'),10)||20;m=Math.max(5,Math.min(120,m));
-  _fetchT=setInterval(fetchAll,m*6e4);scheduleAlerts();
+  _fetchT=setInterval(fetchAll,m*6e4);scheduleAlerts();holiCheck();
 }
 
 function normUrl(v){v=(v||'').trim().replace(/^\/\//,'https://');if(v&&!/^https?:\/\//i.test(v))v='https://'+v;return v}
@@ -461,6 +653,17 @@ function registerSettings(){
   Lampa.SettingsApi.addParam({component:C,param:{name:'rss_alerts_interval',type:'select',values:{'15':'15 сек','30':'30 сек','60':'1 хв','120':'2 хв'},default:D.rss_alerts_interval},field:{name:'  · Перевіряти тривоги кожні',description:'Окремо від новин і курсів'},onChange:scheduleAlerts});
   addTrig('rss_alerts_pin','  · Закріпити статус зліва','Плашка зі статусом і часом перевірки завжди на екрані',function(){updateBadge();rebuild()});
 
+  addTrig('rss_holidays','▸ Свято дня (Gemini AI)','Раз на добу шукає в Google українські та міжнародні свята(може помилятися тому не бийте його)',function(){holiApply();rebuild();holiCheck()});
+  Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_key_btn',type:'trigger',default:false},field:{name:'  · Gemini API key',description:'aistudio.google.com/apikey. Кілька ключів — через кому. Порожньо = ключ «AI Асистента» або вбудований'},onRender:function(item){
+    var upd=function(){var src=holiKeySource(),n=holiKeys().length;item.find('.settings-param__value').text(src==='own'?'Свій ('+n+')':src==='ai'?'З AI Асистента':'Вбудований').css('color',src==='default'?'#fc3':'#4b5')};
+    upd();
+    item.on('hover:enter',function(){Lampa.Input.edit({title:'Gemini API key',value:G('rss_holidays_key')||'',free:true,nosave:true},function(v){S('rss_holidays_key',(v||'').trim());upd();holiCheck(true)})});
+  }});
+  var hm={};HOLI_MODELS.forEach(function(m){hm[m.id]=m.id+(m.search?'':' (без пошуку)')});
+  Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_model',type:'select',values:hm,default:D.rss_holidays_model},field:{name:'  · Основна модель',description:'З неї починається черга запитів'},onChange:function(){var st=G(HOLI_KEY);if(st&&st.model){st.model='';S(HOLI_KEY,st)}holiCheck(true)}});
+  Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_fallback',type:'select',values:{all:'Усі моделі по черзі',off:'Вимкнено'},default:D.rss_holidays_fallback},field:{name:'  · Автоперемикання моделей',description:'При 429 / 503 / помилці — наступний ключ, потім наступна модель'}});
+  Lampa.SettingsApi.addParam({component:C,param:{name:'rss_holidays_refresh',type:'trigger',default:false},field:{name:'  · 🔄 Оновити свята зараз',description:'Примусовий запит (витрачає квоту)'},onChange:function(){S('rss_holidays_refresh',false);Lampa.Noty.show('Запит свят…');holiCheck(true)}});
+
   addTrig('rss_show_news','▸ Новини (RSS)','Увімкнути блок новин у стрічці');
   addTrig('rss_news','  · Українські новини','UNIAN, Ukrinform, LB, NV, Правда');
   addTrig('rss_crypto_news','  · Крипто-новини','Cointelegraph, Decrypt, CryptoSlate');
@@ -479,11 +682,12 @@ function registerSettings(){
   addSel('rss_bg_color','  · Колір фону',{'#ffffff':'Білий','#000000':'Чорний','#ffff00':'Жовтий','#00ff00':'Зелений','#00ffff':'Блакитний','#ff4444':'Червоний','#ff8800':'Помаранчевий'},'',0);
   addSel('rss_opacity','  · Прозорість фону',{'0.3':'30%','0.5':'50%','0.75':'75%','0.9':'90%','1':'100%'},'',0);
   addSel('rss_separator','  · Роздільник',{'  ✦  ':'✦ Зірочка','  |  ':'| Риса','  •  ':'• Точка','  >>>  ':'>>> Стрілки','   ':'Пробіл'},'',3);
-  addTxt('rss_custom_proxy','▸ Свій CORS-проксі','URL воркера (Cloudflare Worker тощо), пробується першим');
+  addTxt('rss_custom_proxy','▸ Свій CORS-проксі','URL воркера, пробується першим. Відповідь «як є» або у форматі cors.io / allorigins');
 }
 
 function init(){
   registerSettings();buildDOM();
+  holiApply();
   var c=loadCache();if(c)setText(c);
   scheduleRefresh();
   var rz;window.addEventListener('resize',function(){clearTimeout(rz);rz=setTimeout(function(){if(_last)setText(_last,true)},400)});
