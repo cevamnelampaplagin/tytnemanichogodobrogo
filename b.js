@@ -2,7 +2,7 @@
 if(window.lampa_rss_ticker)return;window.lampa_rss_ticker=true;
 
 var FEEDS={crypto_news:['https://cointelegraph.com/rss','https://decrypt.co/feed','https://cryptoslate.com/feed/'],fuel:['https://www.nefterynok.info/rss','https://enkorr.ua/feed'],news:['https://rss.unian.net/site/news_ukr.rss','https://www.ukrinform.ua/rss/news.xml','https://lb.ua/rss.xml','https://nv.ua/rss/all.xml','https://www.pravda.com.ua/rss/']},
-API={nbu:'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json',cg:'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,uah&include_24hr_change=true',fuel:'https://api.epalne.com.ua/v1/today',alerts:'https://ubilling.net.ua/aerialalerts/'},
+API={nbu:'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json',cg:'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,uah&include_24hr_change=true',fuel:'https://api.epalne.com.ua/v1/today',alerts:'https://ubilling.net.ua/aerialalerts/?source=default'},
 FUEL_KEY='epk_7331c89d25d42dea0cbbde55174c593c4e2cd3203900083e',
 FUEL_REGIONS={kievskaya:'Київська',lvovskaya:'Львівська',odesskaya:'Одеська',harkovskaya:'Харківська',dnepropetrovskaya:'Дніпропетровська',zaporozhskaya:'Запорізька',vinnickaya:'Вінницька',poltavskaya:'Полтавська',chernigovskaya:'Чернігівська',sumskaya:'Сумська',zhitomirskaya:'Житомирська',chernovickaya:'Чернівецька',ivanofrankovskaya:'Івано-Франківська',ternopolskaya:'Тернопільська',rovenskaya:'Рівненська',volynskaya:'Волинська',hmelnickaya:'Хмельницька',kirovogradskaya:'Кіровоградська',nikolaevskaya:'Миколаївська',hersonskaya:'Херсонська',cherkasskaya:'Черкаська'},
 FUEL_TYPES={a95:'А-95',a95plus:'А-95+',a92:'А-92',diesel:'ДП (дизель)',gas:'Газ (LPG)'},
