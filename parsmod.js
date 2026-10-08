@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-// https://ko31k.github.io/LMP/plugins/Parsers.js moded 070926 to publ
+// https://ko31k.github.io/LMP/plugins/Parsers.js moded 081026 to publ
     var STORAGE_PARSERS = 'ps_list_combo_v0.2';
     var STORAGE_PRI_ACT = 'bat_url_two';
     var STORAGE_SEC_ACT = 'ps_active_sec_v0.2';
@@ -22,6 +22,7 @@
         { base: 'jac_stull', shortName: 'Jac.Stull', name: 'Jac.stull (12)', url: 'jac.stull.xyz', settings: { key: '1', parser_torrent_type: 'jackett' } },
         { base: 'jacred_stream', shortName: 'Jacred.Stream', name: 'Jacred stream (14)', url: 'jacred.stream', settings: { key: 'pp', parser_torrent_type: 'jackett' } },
         { base: '12407_xyz', shortName: '12407_xyz', name: '12407_xyz (12)', url: '12.307407.xyz', settings: { key: '12307407', parser_torrent_type: 'jackett' } },
+        { base: 'crab', shortName: 'crab', name: 'crab (10)', url: 'https://8dppbb.bot-keep.xyz', settings: { key: '', parser_torrent_type: 'jackett' } },
       //cf   { base: '10407_xyz', shortName: '10407_xyz', name: '10407_xyz (??)', url: '10.307407.xyz', settings: { key: '', parser_torrent_type: 'jackett' } },
      //cf   { base: 'num407_xyz', shortName: 'num407_xyz', name: 'num407_xyz (??)', url: 'numprs.307407.xyz', settings: { key: '', parser_torrent_type: 'jackett' } },
         { base: 'nmjc', shortName: 'nmjc', name: 'nmjc (??)', url: 'nmjc.duckdns.org', settings: { key: '', parser_torrent_type: 'jackett' } },
