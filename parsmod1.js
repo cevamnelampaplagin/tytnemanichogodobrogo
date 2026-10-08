@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-// https://ko31k.github.io/LMP/plugins/Parsers.js moded 081026 to publ
+// https://ko31k.github.io/LMP/plugins/Parsers.js moded 081026 cra to publ
 var STORAGE_PARSERS='ps_list_combo_v0.3',
     STORAGE_PRI_ACT='bat_url_two',
     STORAGE_SEC_ACT='ps_active_sec_v0.3',
@@ -24,6 +24,7 @@ var DEFAULT_PARSERS=[
     {base:'jr_maxvol',shortName:'Jr.Maxvol',name:'Jr.Maxvol.pro',url:'jr.maxvol.pro',displayUrl:'jr.maxvol.pro',settings:{key:'',parser_torrent_type:'jackett'}},
     {base:'maxvol_pro',shortName:'Jac.Maxvol',name:'Jac.Maxvol.pro',url:'jac.maxvol.pro',displayUrl:'jac.maxvol.pro',settings:{key:'1',parser_torrent_type:'jackett'}},
     {base:'no_name',shortName:'NoName',name:'NoName',url:'http://87.120.84.218:9117',displayUrl:'http://87.120.84.218:9117',settings:{key:'333',parser_torrent_type:'jackett'}},
+    {base:'crab',shortName:'crab',name:'crab (10)',url:'https://8dppbb.bot-keep.xyz',settings:{key:'',parser_torrent_type:'jackett'}},
     {base:'407_xyz',shortName:'407-Xyz',name:'407-Xyz',url:'12.307407.xyz',displayUrl:'12.307407.xyz',settings:{key:'12307407',parser_torrent_type:'jackett'}},
     {base:'alco1',shortName:'alcoV1',name:'Alpac v1',url:'https://alpacv1filt.pubgpityx.workers.dev/',displayUrl:'https://alpacv1filt.pubgpityx.workers.dev/',settings:{key:'',parser_torrent_type:'jackett'}},
     {base:'alco2',shortName:'alcoV2',name:'Alpac v2',url:'https://tv.alcopa.cc/api/v2.0/indexers/all/results?title=',displayUrl:'https://tv.alcopa.cc',settings:{key:'',parser_torrent_type:'jackett'}},
