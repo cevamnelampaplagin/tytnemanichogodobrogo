@@ -1,9 +1,9 @@
 (function(){
 'use strict';
-
-var STORAGE_PARSERS='ps_list_combo_v0.9',
+// https://ko31k.github.io/LMP/plugins/Parsers.js moded 081026 to publ
+var STORAGE_PARSERS='ps_list_combo_v0.3',
     STORAGE_PRI_ACT='bat_url_two',
-    STORAGE_SEC_ACT='ps_active_sec_v0.9',
+    STORAGE_SEC_ACT='ps_active_sec_v0.3',
     NO_PARSER='no_parser',
     PROXY_PREFIX='https://parserbridge.lampame.v6.rocks/',
     STORAGE_RAW_PRI='bat_raw_primary_url_v1',
