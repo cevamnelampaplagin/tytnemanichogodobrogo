@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  // ===== Logging Helper =====  
+  // ===== Logging Helper =====  161026
   // orig url = https://BDVBurik.github.io/title.js
   function log(message, data) {
     console.log("[Title Plugin]", message, data || "");
@@ -253,8 +253,7 @@
                     <div class="menu-edit-list__toggle selector">
                         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>
-                            <path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="${isHidden ? 0 : 1
-        }" stroke-linecap="round"/>
+                            <path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="${isHidden ? 0 : 1}" stroke-linecap="round"/>
                         </svg>
                     </div>
                 </div>`);
@@ -291,11 +290,11 @@
       list.append(item);
     });
 
-    const resetBtn = $(
-      '<div class="selector folder-reset-button" style="margin-top:1em;padding:1em;text-align:center;">' +
-      Lampa.Lang.translate("reset_to_default") +
-      "</div>"
-    );
+    const resetBtn = $(`
+      <div class="selector folder-reset-button" style="margin-top:1em;padding:1em;text-align:center;">
+        ${Lampa.Lang.translate("reset_to_default")}
+      </div>
+    `);
     resetBtn.on("hover:enter", function () {
       Lampa.Storage.set(STORAGE_ORDER_KEY, LANGS.slice());
       Lampa.Storage.set(STORAGE_HIDDEN_KEY, []);
